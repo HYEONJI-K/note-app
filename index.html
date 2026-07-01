@@ -574,6 +574,14 @@ document.getElementById('folder-sel').onchange=updateCurrent;
 
 // ── 마크다운 파서 ──────────────────────────────────
 function parseMd(md) {
+  // 이미지 먼저 추출 (base64가 이스케이프되지 않도록)
+  const imgMap = {};
+  md = md.replace(/!\[([^\]]*)\]\((data:image[^)]+|https?:[^)]+|[^)]+)\)/g, (m, alt, src) => {
+    const key = `__IMG${Object.keys(imgMap).length}__`;
+    imgMap[key] = `<img src="${src}" alt="${alt}" style="max-width:100%;border-radius:6px;margin:6px 0;display:block;"/>`;
+    return key;
+  });
+
   let h = md.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/^#{3}\s(.+)$/gm,'<h3>$1</h3>')
     .replace(/^#{2}\s(.+)$/gm,'<h2>$1</h2>')
@@ -589,9 +597,6 @@ function parseMd(md) {
     const id='cb'+Math.random().toString(36).slice(2);
     return `<div class="cb-wrap"><pre><code id="${id}">${code.trimEnd()}</code></pre><button class="copy-btn" onclick="copyCode('${id}')">복사</button></div>`;
   });
-
-  // 이미지 (base64 포함)
-  h = h.replace(/!\[([^\]]*)\]\((data:image[^)]+|[^)]+)\)/g, '<img src="$2" alt="$1"/>');
 
   // 표
   h = h.replace(/((?:^\|.+\|\n?)+)/gm, tableBlock => {
@@ -612,6 +617,10 @@ function parseMd(md) {
   h = h.replace(/^- (.+)$/gm,'<li>$1</li>').replace(/(<li>.*<\/li>\n?)+/g,m=>'<ul>'+m+'</ul>');
   h = h.replace(/\n{2,}/g,'</p><p>').replace(/\n/g,'<br>');
   h = h.replace(/^(?!<[a-z])(.+)$/gm,'<p>$1</p>').replace(/<p><\/p>/g,'');
+
+  // 이미지 복원
+  Object.entries(imgMap).forEach(([key, val]) => { h = h.replace(key, val); });
+
   return h;
 }
 
