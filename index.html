@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Notes</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f5f3;--surface:#fff;--surface2:#f0ede8;
+  --border:rgba(0,0,0,0.1);--text:#1a1a18;--text2:#6b6b67;
+  --accent:#2563eb;--accent-bg:#eff6ff;--danger:#dc2626;
+  --radius:8px;--mono:'Courier New',monospace;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-size:14px;color:var(--text);background:var(--bg);
+  height:100vh;display:flex;flex-direction:column;}
+
+/* 토큰 입력 화면 */
+#token-screen{display:flex;flex-direction:column;align-items:center;
+  justify-content:center;flex:1;gap:14px;}
+#token-screen h1{font-size:22px;font-weight:500;}
+#token-screen p{color:var(--text2);font-size:13px;max-width:340px;text-align:center;line-height:1.6;}
+#token-screen a{color:var(--accent);}
+.token-box{display:flex;gap:6px;width:100%;max-width:380px;}
+#token-input{flex:1;padding:8px 10px;border:0.5px solid var(--border);
+  border-radius:var(--radius);background:var(--surface);color:var(--text);
+  font-size:13px;outline:none;font-family:var(--mono);}
+#token-input:focus{border-color:var(--accent);}
+#token-btn{padding:8px 16px;border:none;border-radius:var(--radius);
+  background:var(--accent);color:#fff;cursor:pointer;font-size:13px;}
+#token-btn:hover{background:#1d4ed8;}
+#token-err{color:var(--danger);font-size:12px;display:none;}
+
+/* 앱 레이아웃 */
+#app{display:none;flex:1;flex-direction:column;overflow:hidden;}
+#topbar{display:flex;align-items:center;gap:10px;padding:8px 14px;
+  border-bottom:0.5px solid var(--border);background:var(--surface);}
+#topbar h1{font-size:15px;font-weight:500;flex:1;}
+#sync-status{font-size:11px;color:var(--text2);}
+#user-info{display:flex;align-items:center;gap:8px;}
+#gh-avatar{width:26px;height:26px;border-radius:50%;}
+#gh-name{font-size:13px;color:var(--text2);}
+#logout-btn{padding:3px 10px;border:0.5px solid var(--border);
+  border-radius:var(--radius);background:transparent;cursor:pointer;font-size:12px;color:var(--text2);}
+#logout-btn:hover{background:var(--surface2);}
+
+#workspace{display:flex;flex:1;overflow:hidden;}
+
+/* 사이드바 */
+#sidebar{width:220px;min-width:220px;border-right:0.5px solid var(--border);
+  display:flex;flex-direction:column;background:#f8f7f4;}
+#sidebar-top{padding:10px;border-bottom:0.5px solid var(--border);}
+#search{width:100%;padding:5px 8px;border:0.5px solid var(--border);
+  border-radius:var(--radius);background:var(--surface);color:var(--text);
+  font-size:13px;outline:none;}
+#search:focus{border-color:var(--accent);}
+.sec-label{font-size:10px;color:var(--text2);text-transform:uppercase;
+  letter-spacing:.5px;padding:8px 10px 3px;}
+.folder{display:flex;align-items:center;gap:6px;padding:4px 10px;
+  cursor:pointer;font-size:13px;color:var(--text2);}
+.folder:hover,.folder.active{background:var(--surface2);color:var(--text);}
+#tag-area{padding:4px 10px 8px;border-bottom:0.5px solid var(--border);}
+.tag-pill{display:inline-flex;padding:2px 8px;border-radius:20px;font-size:11px;
+  margin:2px;cursor:pointer;background:var(--surface);color:var(--text2);
+  border:0.5px solid var(--border);}
+.tag-pill:hover,.tag-pill.on{background:var(--accent-bg);color:var(--accent);border-color:var(--accent);}
+#note-list{flex:1;overflow-y:auto;padding:6px;}
+.note-row{padding:8px 10px;border-radius:var(--radius);cursor:pointer;
+  margin-bottom:2px;border:0.5px solid transparent;}
+.note-row:hover{background:var(--surface);}
+.note-row.active{background:var(--surface);border-color:var(--border);}
+.nr-title{font-size:13px;font-weight:500;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;}
+.nr-preview{font-size:11px;color:var(--text2);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+.nr-tags{display:flex;gap:3px;margin-top:3px;flex-wrap:wrap;}
+.nr-tag{font-size:10px;padding:1px 5px;border-radius:20px;
+  background:var(--accent-bg);color:var(--accent);}
+#sidebar-btns{padding:8px;border-top:0.5px solid var(--border);display:flex;flex-direction:column;gap:4px;}
+#new-btn{width:100%;padding:7px;border:0.5px solid var(--border);
+  border-radius:var(--radius);background:transparent;color:var(--text2);
+  cursor:pointer;font-size:13px;}
+#new-btn:hover{background:var(--surface);color:var(--text);}
+.io-row{display:flex;gap:4px;}
+.io-btn{flex:1;padding:6px 4px;border:0.5px solid var(--border);
+  border-radius:var(--radius);background:transparent;color:var(--text2);
+  cursor:pointer;font-size:11px;}
+.io-btn:hover{background:var(--surface);color:var(--text);}
+#save-gist-btn{width:100%;padding:7px;border:0.5px solid var(--accent);
+  border-radius:var(--radius);background:var(--accent-bg);color:var(--accent);
+  cursor:pointer;font-size:12px;font-weight:500;}
+#save-gist-btn:hover{background:var(--accent);color:#fff;}
+
+/* 에디터 */
+#main{flex:1;display:flex;flex-direction:column;min-width:0;}
+#editor-header{padding:10px 14px;border-bottom:0.5px solid var(--border);
+  display:flex;align-items:center;gap:8px;background:var(--surface);}
+#title-input{flex:1;font-size:16px;font-weight:500;border:none;
+  background:transparent;color:var(--text);outline:none;}
+#title-input::placeholder{color:var(--text2);}
+.tabs{display:flex;gap:2px;border:0.5px solid var(--border);
+  border-radius:var(--radius);padding:2px;}
+.tab{padding:3px 10px;border:none;border-radius:5px;background:transparent;
+  color:var(--text2);font-size:12px;cursor:pointer;}
+.tab.on{background:var(--surface2);color:var(--text);font-weight:500;}
+#toolbar{padding:6px 14px;border-bottom:0.5px solid var(--border);
+  display:flex;gap:4px;flex-wrap:wrap;background:var(--surface);}
+.tb{padding:4px 7px;border:0.5px solid var(--border);border-radius:var(--radius);
+  background:transparent;color:var(--text2);font-size:12px;cursor:pointer;}
+.tb:hover{background:var(--surface2);color:var(--text);}
+.tb-sep{width:0.5px;background:var(--border);margin:0 3px;}
+#editor-area{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+#md-editor{flex:1;padding:14px;font-family:var(--mono);font-size:13px;
+  line-height:1.7;border:none;background:transparent;color:var(--text);
+  resize:none;outline:none;}
+#preview{flex:1;padding:14px;overflow-y:auto;line-height:1.7;font-size:14px;display:none;}
+#preview h1{font-size:20px;font-weight:500;margin-bottom:10px;
+  border-bottom:0.5px solid var(--border);padding-bottom:6px;}
+#preview h2{font-size:17px;font-weight:500;margin:12px 0 6px;}
+#preview h3{font-size:15px;font-weight:500;margin:10px 0 5px;}
+#preview p{margin-bottom:8px;}
+#preview code{font-family:var(--mono);font-size:12px;background:var(--surface2);
+  padding:1px 5px;border-radius:4px;border:0.5px solid var(--border);}
+#preview pre{background:var(--surface2);border:0.5px solid var(--border);
+  border-radius:var(--radius);padding:10px 12px;margin-bottom:10px;overflow-x:auto;position:relative;}
+#preview pre code{background:none;border:none;padding:0;font-size:12px;}
+#preview ul,#preview ol{padding-left:18px;margin-bottom:8px;}
+#preview li{margin-bottom:3px;}
+#preview blockquote{border-left:3px solid var(--accent);padding-left:10px;
+  color:var(--text2);margin-bottom:8px;}
+#preview strong{font-weight:500;}
+#preview em{font-style:italic;}
+#preview hr{border:none;border-top:0.5px solid var(--border);margin:12px 0;}
+.task-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+.task-row input{width:15px;height:15px;cursor:pointer;}
+.done{text-decoration:line-through;color:var(--text2);}
+.cb-wrap{position:relative;}
+.copy-btn{position:absolute;top:6px;right:6px;padding:3px 8px;font-size:11px;
+  border:0.5px solid var(--border);border-radius:4px;background:var(--surface);
+  color:var(--text2);cursor:pointer;}
+#footer{padding:6px 14px;border-top:0.5px solid var(--border);
+  display:flex;align-items:center;gap:8px;background:var(--surface);}
+#tag-wrap{display:flex;flex-wrap:wrap;align-items:center;gap:4px;flex:1;}
+.ftag{display:flex;align-items:center;gap:3px;font-size:11px;padding:2px 6px;
+  border-radius:20px;background:var(--accent-bg);color:var(--accent);}
+.ftag button{background:none;border:none;cursor:pointer;color:var(--accent);
+  font-size:12px;padding:0;line-height:1;}
+#tag-in{border:none;background:transparent;color:var(--text2);
+  font-size:12px;outline:none;width:90px;}
+#tag-in::placeholder{color:var(--text2);opacity:.6;}
+#folder-sel{border:0.5px solid var(--border);border-radius:var(--radius);
+  background:var(--surface2);color:var(--text2);font-size:12px;padding:3px 6px;outline:none;}
+#del-btn{padding:4px 8px;border:0.5px solid #f09595;border-radius:var(--radius);
+  background:transparent;color:var(--danger);cursor:pointer;font-size:12px;}
+#del-btn:hover{background:#fef2f2;}
+
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:var(--text);color:#fff;border-radius:var(--radius);
+  padding:7px 16px;font-size:13px;pointer-events:none;
+  opacity:0;transition:opacity .3s;z-index:100;white-space:nowrap;}
+</style>
+</head>
+<body>
+
+<!-- 토큰 입력 화면 -->
+<div id="token-screen">
+  <h1>📝 Notes</h1>
+  <p>GitHub Personal Access Token을 입력하세요.<br>
+    <a href="https://github.com/settings/tokens/new?scopes=gist&description=notes-app" target="_blank">
+      토큰 발급 바로가기 (gist 권한만 선택)
+    </a>
+  </p>
+  <div class="token-box">
+    <input id="token-input" type="password" placeholder="ghp_..." />
+    <button id="token-btn">로그인</button>
+  </div>
+  <div id="token-err">토큰이 올바르지 않습니다. 다시 확인해주세요.</div>
+</div>
+
+<!-- 앱 화면 -->
+<div id="app">
+  <div id="topbar">
+    <h1>📝 Notes</h1>
+    <span id="sync-status"></span>
+    <div id="user-info">
+      <img id="gh-avatar" src="" alt="프로필" />
+      <span id="gh-name"></span>
+      <button id="logout-btn">로그아웃</button>
+    </div>
+  </div>
+  <div id="workspace">
+    <div id="sidebar">
+      <div id="sidebar-top">
+        <input id="search" placeholder="검색..." />
+      </div>
+      <div class="sec-label">폴더</div>
+      <div class="folder active" data-f="all">📋 전체 노트</div>
+      <div class="folder" data-f="work">💼 업무</div>
+      <div class="folder" data-f="personal">👤 개인</div>
+      <div class="folder" data-f="ideas">💡 아이디어</div>
+      <div class="sec-label">태그</div>
+      <div id="tag-area"></div>
+      <div id="note-list"></div>
+      <div id="sidebar-btns">
+        <button id="new-btn">+ 새 노트</button>
+        <button id="save-gist-btn">☁ Gist에 저장 (동기화)</button>
+        <div class="io-row">
+          <button class="io-btn" id="exp-json">⬇ JSON</button>
+          <button class="io-btn" id="exp-md">⬇ MD</button>
+          <button class="io-btn" id="imp-btn">⬆ 불러오기</button>
+          <input type="file" id="imp-file" accept=".json" style="display:none" />
+        </div>
+      </div>
+    </div>
+    <div id="main">
+      <div id="editor-header">
+        <input id="title-input" placeholder="제목 없음" />
+        <div class="tabs">
+          <button class="tab on" id="t-edit">편집</button>
+          <button class="tab" id="t-prev">미리보기</button>
+        </div>
+      </div>
+      <div id="toolbar">
+        <button class="tb" data-a="bold"><b>B</b></button>
+        <button class="tb" data-a="italic"><i>I</i></button>
+        <button class="tb" data-a="h1">H1</button>
+        <button class="tb" data-a="h2">H2</button>
+        <button class="tb" data-a="h3">H3</button>
+        <span class="tb-sep"></span>
+        <button class="tb" data-a="ul">목록</button>
+        <button class="tb" data-a="task">☑</button>
+        <button class="tb" data-a="quote">"</button>
+        <span class="tb-sep"></span>
+        <button class="tb" data-a="code">&lt;/&gt;</button>
+        <button class="tb" data-a="codeblock">블록</button>
+        <button class="tb" data-a="hr">—</button>
+      </div>
+      <div id="editor-area">
+        <textarea id="md-editor" placeholder="마크다운으로 작성하세요..."></textarea>
+        <div id="preview"></div>
+      </div>
+      <div id="footer">
+        <span>🏷</span>
+        <div id="tag-wrap"></div>
+        <select id="folder-sel">
+          <option value="all">전체</option>
+          <option value="work">업무</option>
+          <option value="personal">개인</option>
+          <option value="ideas">아이디어</option>
+        </select>
+        <button id="del-btn">🗑</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const TOKEN_KEY = 'notes_gh_token';
+const GIST_KEY  = 'notes_gist_id';
+const LOCAL_KEY = 'notes_local_v1';
+
+let token = '', gistId = '', notes = [], currentId = null;
+let activeFolder = 'all', activeTag = null, searchQ = '', editMode = true;
+
+// ── 초기화 ─────────────────────────────────────────
+window.onload = () => {
+  token  = localStorage.getItem(TOKEN_KEY) || '';
+  gistId = localStorage.getItem(GIST_KEY)  || '';
+  notes  = JSON.parse(localStorage.getItem(LOCAL_KEY) || '[]');
+  if (token) bootApp();
+};
+
+document.getElementById('token-btn').onclick = async () => {
+  const val = document.getElementById('token-input').value.trim();
+  if (!val) return;
+  document.getElementById('token-btn').textContent = '확인 중...';
+  const ok = await verifyToken(val);
+  if (ok) {
+    token = val;
+    localStorage.setItem(TOKEN_KEY, token);
+    document.getElementById('token-err').style.display = 'none';
+    bootApp();
+  } else {
+    document.getElementById('token-err').style.display = 'block';
+    document.getElementById('token-btn').textContent = '로그인';
+  }
+};
+
+async function verifyToken(t) {
+  const res = await fetch('https://api.github.com/user', {
+    headers: { Authorization: `token ${t}` }
+  });
+  if (!res.ok) return false;
+  const u = await res.json();
+  document.getElementById('gh-avatar').src = u.avatar_url;
+  document.getElementById('gh-name').textContent = u.login;
+  return true;
+}
+
+async function bootApp() {
+  // 사용자 정보 로드 (이미 화면에 없으면)
+  if (!document.getElementById('gh-name').textContent) {
+    await verifyToken(token);
+  }
+  document.getElementById('token-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('app').style.flexDirection = 'column';
+
+  // Gist에서 최신 노트 불러오기
+  if (gistId) {
+    await loadFromGist();
+  } else {
+    // 로컬 데이터로 시작 (첫 실행)
+    if (!notes.length) notes = defaultNotes();
+    renderAll();
+    if (notes.length) selectNote(notes[0].id);
+    setSyncStatus('☁ 저장 버튼으로 첫 동기화');
+  }
+}
+
+// ── Gist API ───────────────────────────────────────
+async function loadFromGist() {
+  setSyncStatus('불러오는 중...');
+  try {
+    const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+      headers: { Authorization: `token ${token}` }
+    });
+    if (res.status === 404) {
+      // Gist가 삭제된 경우 초기화
+      gistId = ''; localStorage.removeItem(GIST_KEY);
+      setSyncStatus('⚠ Gist를 찾을 수 없음. 저장 버튼으로 새로 생성하세요.');
+      renderAll(); return;
+    }
+    const data = await res.json();
+    const content = data.files['notes.json']?.content;
+    if (content) {
+      const parsed = JSON.parse(content);
+      notes = Array.isArray(parsed) ? parsed : (parsed.notes || []);
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(notes));
+    }
+    setSyncStatus('✓ 동기화됨');
+    renderAll();
+    if (notes.length) selectNote(notes[0].id);
+  } catch {
+    setSyncStatus('⚠ 불러오기 실패 (오프라인?)');
+    renderAll();
+    if (notes.length) selectNote(notes[0].id);
+  }
+}
+
+async function saveToGist() {
+  setSyncStatus('저장 중...');
+  const content = JSON.stringify({ version: 1, saved: new Date().toISOString(), notes }, null, 2);
+  try {
+    if (gistId) {
+      // 기존 Gist 업데이트
+      await fetch(`https://api.github.com/gists/${gistId}`, {
+        method: 'PATCH',
+        headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files: { 'notes.json': { content } } })
+      });
+    } else {
+      // 첫 저장: 새 Gist 생성
+      const res = await fetch('https://api.github.com/gists', {
+        method: 'POST',
+        headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: 'Notes App Backup',
+          public: false,
+          files: { 'notes.json': { content } }
+        })
+      });
+      const data = await res.json();
+      gistId = data.id;
+      localStorage.setItem(GIST_KEY, gistId);
+    }
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(notes));
+    setSyncStatus('✓ 동기화됨 · ' + new Date().toLocaleTimeString());
+    toast('☁ Gist에 저장 완료');
+  } catch {
+    setSyncStatus('⚠ 저장 실패');
+    toast('저장 실패 — 네트워크를 확인하세요');
+  }
+}
+
+document.getElementById('save-gist-btn').onclick = saveToGist;
+
+document.getElementById('logout-btn').onclick = () => {
+  if (!confirm('로그아웃하면 이 기기의 토큰이 삭제됩니다. 계속할까요?')) return;
+  localStorage.removeItem(TOKEN_KEY);
+  token = ''; gistId = ''; notes = [];
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('token-screen').style.display = 'flex';
+  document.getElementById('token-input').value = '';
+};
+
+function setSyncStatus(s) { document.getElementById('sync-status').textContent = s; }
+
+// ── 노트 로직 ──────────────────────────────────────
+function genId() { return 'n' + Date.now() + Math.random().toString(36).slice(2); }
+
+function defaultNotes() {
+  return [{
+    id: 'demo1', title: '환영합니다! 📝',
+    body: '# Notes 앱\n\n**GitHub Gist**에 동기화됩니다.\n\n- [x] 마크다운 지원\n- [x] 기기 간 동기화\n- [ ] 나만의 노트 작성\n\n> 좌측 하단 **Gist에 저장** 버튼을 누르면\n> 모든 기기에서 같은 노트를 볼 수 있습니다.',
+    folder: 'personal', tags: ['가이드'], created: Date.now()
+  }];
+}
+
+function saveLocal() { localStorage.setItem(LOCAL_KEY, JSON.stringify(notes)); }
+
+function filtered() {
+  return notes.filter(n => {
+    if (activeFolder !== 'all' && n.folder !== activeFolder) return false;
+    if (activeTag && !(n.tags || []).includes(activeTag)) return false;
+    if (searchQ) {
+      const q = searchQ.toLowerCase();
+      if (!n.title.toLowerCase().includes(q) && !n.body.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  }).sort((a, b) => b.created - a.created);
+}
+
+function allTags() {
+  const t = new Set();
+  notes.forEach(n => (n.tags || []).forEach(tag => t.add(tag)));
+  return [...t];
+}
+
+function renderAll() { renderList(); renderTags(); }
+
+function renderList() {
+  const el = document.getElementById('note-list');
+  const fn = filtered();
+  el.innerHTML = '';
+  if (!fn.length) {
+    el.innerHTML = '<div style="padding:12px;text-align:center;color:#888;font-size:12px">노트 없음</div>';
+    return;
+  }
+  fn.forEach(n => {
+    const d = document.createElement('div');
+    d.className = 'note-row' + (n.id === currentId ? ' active' : '');
+    const prev = n.body.replace(/[#`*_>\-\[\]!]/g, '').replace(/\n/g, ' ').slice(0, 50);
+    const tags = (n.tags || []).map(t => `<span class="nr-tag">${t}</span>`).join('');
+    d.innerHTML = `<div class="nr-title">${n.title || '제목 없음'}</div>
+      <div class="nr-preview">${prev || '내용 없음'}</div>
+      <div class="nr-tags">${tags}</div>`;
+    d.onclick = () => selectNote(n.id);
+    el.appendChild(d);
+  });
+}
+
+function renderTags() {
+  const area = document.getElementById('tag-area');
+  const tags = allTags();
+  area.innerHTML = '';
+  if (!tags.length) {
+    area.innerHTML = '<div style="font-size:11px;color:#888;padding:0 10px">태그 없음</div>';
+    return;
+  }
+  tags.forEach(t => {
+    const p = document.createElement('span');
+    p.className = 'tag-pill' + (activeTag === t ? ' on' : '');
+    p.textContent = t;
+    p.onclick = () => { activeTag = activeTag === t ? null : t; renderAll(); };
+    area.appendChild(p);
+  });
+}
+
+function selectNote(id) {
+  currentId = id;
+  const n = notes.find(x => x.id === id);
+  if (!n) return;
+  document.getElementById('title-input').value = n.title;
+  document.getElementById('md-editor').value = n.body;
+  document.getElementById('folder-sel').value = n.folder || 'all';
+  renderFooterTags(n.tags || []);
+  renderList();
+  if (!editMode) renderPreview();
+}
+
+function renderFooterTags(tags) {
+  const wrap = document.getElementById('tag-wrap');
+  wrap.innerHTML = '';
+  tags.forEach(t => {
+    const s = document.createElement('span');
+    s.className = 'ftag';
+    s.innerHTML = `${t}<button>×</button>`;
+    s.querySelector('button').onclick = () => removeTag(t);
+    wrap.appendChild(s);
+  });
+  const inp = document.createElement('input');
+  inp.id = 'tag-in'; inp.placeholder = '태그 추가...';
+  inp.onkeydown = e => {
+    if ((e.key === 'Enter' || e.key === ',') && inp.value.trim()) {
+      e.preventDefault(); addTag(inp.value.trim()); inp.value = '';
+    }
+  };
+  wrap.appendChild(inp);
+}
+
+function addTag(t) {
+  const n = notes.find(x => x.id === currentId); if (!n) return;
+  if (!(n.tags || []).includes(t)) { n.tags = [...(n.tags || []), t]; saveLocal(); }
+  renderFooterTags(n.tags); renderTags(); renderList();
+}
+
+function removeTag(t) {
+  const n = notes.find(x => x.id === currentId); if (!n) return;
+  n.tags = (n.tags || []).filter(x => x !== t); saveLocal();
+  renderFooterTags(n.tags); renderTags(); renderList();
+}
+
+function updateCurrent() {
+  const n = notes.find(x => x.id === currentId); if (!n) return;
+  n.body = document.getElementById('md-editor').value;
+  n.title = document.getElementById('title-input').value;
+  n.folder = document.getElementById('folder-sel').value;
+  saveLocal(); renderList();
+  if (!editMode) renderPreview();
+}
+
+document.getElementById('md-editor').oninput = updateCurrent;
+document.getElementById('title-input').oninput = updateCurrent;
+document.getElementById('folder-sel').onchange = updateCurrent;
+
+// ── 마크다운 파서 ──────────────────────────────────
+function parseMd(md) {
+  let h = md.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^#{3}\s(.+)$/gm,'<h3>$1</h3>')
+    .replace(/^#{2}\s(.+)$/gm,'<h2>$1</h2>')
+    .replace(/^#\s(.+)$/gm,'<h1>$1</h1>')
+    .replace(/^---$/gm,'<hr>')
+    .replace(/^&gt;\s(.+)$/gm,'<blockquote>$1</blockquote>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/`([^`\n]+)`/g,'<code>$1</code>');
+  h = h.replace(/```(\w*)\n([\s\S]*?)```/g, (m, lang, code) => {
+    const id = 'cb' + Math.random().toString(36).slice(2);
+    return `<div class="cb-wrap"><pre><code id="${id}">${code.trimEnd()}</code></pre><button class="copy-btn" onclick="copyCode('${id}')">복사</button></div>`;
+  });
+  h = h.replace(/^- \[x\] (.+)$/gm, '<div class="task-row"><input type="checkbox" checked onchange="toggleTask(this,\'$1\')"> <span class="done">$1</span></div>');
+  h = h.replace(/^- \[ \] (.+)$/gm, '<div class="task-row"><input type="checkbox" onchange="toggleTask(this,\'$1\')"> <span>$1</span></div>');
+  h = h.replace(/^- (.+)$/gm,'<li>$1</li>').replace(/(<li>.*<\/li>\n?)+/g,m=>'<ul>'+m+'</ul>');
+  h = h.replace(/\n{2,}/g,'</p><p>').replace(/\n/g,'<br>');
+  h = h.replace(/^(?!<[a-z])(.+)$/gm,'<p>$1</p>').replace(/<p><\/p>/g,'');
+  return h;
+}
+
+function renderPreview() {
+  document.getElementById('preview').innerHTML = parseMd(document.getElementById('md-editor').value);
+}
+
+window.copyCode = id => {
+  const el = document.getElementById(id); if (!el) return;
+  navigator.clipboard.writeText(el.textContent);
+  const b = el.closest('.cb-wrap')?.querySelector('.copy-btn');
+  if (b) { b.textContent = '복사됨!'; setTimeout(() => b.textContent = '복사', 1500); }
+};
+
+window.toggleTask = (cb, text) => {
+  const n = notes.find(x => x.id === currentId); if (!n) return;
+  n.body = cb.checked ? n.body.replace(`- [ ] ${text}`, `- [x] ${text}`)
+                      : n.body.replace(`- [x] ${text}`, `- [ ] ${text}`);
+  document.getElementById('md-editor').value = n.body;
+  saveLocal(); renderPreview();
+};
+
+// ── 툴바 ──────────────────────────────────────────
+function insert(text, wrap) {
+  const ta = document.getElementById('md-editor');
+  const s = ta.selectionStart, e = ta.selectionEnd, sel = ta.value.slice(s, e);
+  let ins;
+  if (wrap && sel) { const h = text.length / 2; ins = text.slice(0,h) + sel + text.slice(h); }
+  else ins = text;
+  ta.value = ta.value.slice(0, s) + ins + ta.value.slice(e);
+  ta.selectionStart = ta.selectionEnd = s + ins.length;
+  ta.focus(); updateCurrent();
+}
+
+document.getElementById('toolbar').onclick = e => {
+  const btn = e.target.closest('[data-a]'); if (!btn) return;
+  const a = btn.dataset.a;
+  if (a==='bold') insert('****',true);
+  else if (a==='italic') insert('**',true);
+  else if (a==='code') insert('``',true);
+  else if (a==='h1') insert('# ');
+  else if (a==='h2') insert('## ');
+  else if (a==='h3') insert('### ');
+  else if (a==='ul') insert('- ');
+  else if (a==='task') insert('- [ ] ');
+  else if (a==='quote') insert('> ');
+  else if (a==='codeblock') insert('```js\n\n```');
+  else if (a==='hr') insert('\n---\n');
+};
+
+// ── 탭 전환 ───────────────────────────────────────
+document.getElementById('t-edit').onclick = () => {
+  editMode = true;
+  document.getElementById('md-editor').style.display = '';
+  document.getElementById('preview').style.display = 'none';
+  document.getElementById('toolbar').style.display = '';
+  document.getElementById('t-edit').classList.add('on');
+  document.getElementById('t-prev').classList.remove('on');
+};
+document.getElementById('t-prev').onclick = () => {
+  editMode = false; renderPreview();
+  document.getElementById('md-editor').style.display = 'none';
+  document.getElementById('preview').style.display = '';
+  document.getElementById('toolbar').style.display = 'none';
+  document.getElementById('t-prev').classList.add('on');
+  document.getElementById('t-edit').classList.remove('on');
+};
+
+// ── 새 노트 / 삭제 ───────────────────────────────
+document.getElementById('new-btn').onclick = () => {
+  const n = { id: genId(), title: '', body: '',
+    folder: activeFolder === 'all' ? 'personal' : activeFolder,
+    tags: [], created: Date.now() };
+  notes.unshift(n); saveLocal(); renderAll(); selectNote(n.id);
+  document.getElementById('title-input').focus();
+};
+
+document.getElementById('del-btn').onclick = () => {
+  if (!currentId || !confirm('이 노트를 삭제할까요?')) return;
+  notes = notes.filter(x => x.id !== currentId);
+  currentId = null; saveLocal(); renderAll();
+  document.getElementById('title-input').value = '';
+  document.getElementById('md-editor').value = '';
+  renderFooterTags([]);
+};
+
+// ── 폴더 / 검색 ───────────────────────────────────
+document.querySelectorAll('.folder').forEach(el => {
+  el.onclick = () => {
+    document.querySelectorAll('.folder').forEach(x => x.classList.remove('active'));
+    el.classList.add('active');
+    activeFolder = el.dataset.f; activeTag = null;
+    renderAll();
+  };
+});
+document.getElementById('search').oninput = e => { searchQ = e.target.value.trim(); renderAll(); };
+
+// ── JSON / MD 내보내기 ────────────────────────────
+function dlFile(content, name, type) {
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([content], { type })), download: name
+  });
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+document.getElementById('exp-json').onclick = () => {
+  dlFile(JSON.stringify({ version:1, notes }, null, 2),
+    `notes-${new Date().toISOString().slice(0,10)}.json`, 'application/json');
+  toast(`${notes.length}개 노트 JSON 저장`);
+};
+document.getElementById('exp-md').onclick = () => {
+  const n = notes.find(x => x.id === currentId);
+  if (!n) { toast('노트를 먼저 선택하세요'); return; }
+  dlFile(`# ${n.title}\n\n${n.body}`,
+    `${(n.title||'note').replace(/[^a-zA-Z0-9가-힣]/g,'-')}.md`, 'text/markdown');
+  toast('MD 파일 저장');
+};
+document.getElementById('imp-btn').onclick = () => document.getElementById('imp-file').click();
+document.getElementById('imp-file').onchange = e => {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const parsed = JSON.parse(ev.target.result);
+      const arr = Array.isArray(parsed) ? parsed : (parsed.notes || []);
+      const existIds = new Set(notes.map(n => n.id));
+      let added = 0;
+      arr.forEach(n => { if (!existIds.has(n.id)) { notes.unshift(n); added++; } });
+      saveLocal(); renderAll();
+      toast(`${added}개 노트 불러오기 완료`);
+    } catch { toast('JSON 파싱 오류'); }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+};
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.opacity = '1';
+  clearTimeout(t._t); t._t = setTimeout(() => t.style.opacity = '0', 2500);
+}
+</script>
+</body>
+</html>
