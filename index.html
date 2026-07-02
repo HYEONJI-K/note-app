@@ -351,7 +351,7 @@ document.getElementById('token-btn').onclick=async()=>{
   if(!val) return;
   document.getElementById('token-btn').textContent='확인 중...';
   const ok=await verifyToken(val);
-  if(ok){
+  if(오케이){
     token=val; localStorage.setItem(TOKEN_KEY,token);
     document.getElementById('token-err').style.display='none';
     bootApp();
@@ -376,12 +376,31 @@ async function bootApp(){
   if(!document.getElementById('gh-name').textContent) await verifyToken(token);
   document.getElementById('token-screen').style.display='none';
   document.getElementById('app').style.cssText='display:flex;flex-direction:column;flex:1;overflow:hidden;';
-  if(gistId) await loadFromGist();
-  else {
-    if(!notes.length) notes=defaultNotes();
-    renderAll();
-    if(notes.length) selectNote(notes[0].id);
-    setSyncStatus('☁ 저장 버튼으로 첫 동기화');
+  if(gistId){
+    await loadFromGist();
+  } else {
+    // Gist ID가 없으면 GitHub에서 notes-app Gist를 자동 검색
+    setSyncStatus('Gist 검색 중...');
+    try{
+      const res=await fetch('https://api.github.com/gists',{headers:{Authorization:`token ${token}`}});
+      const list=await res.json();
+      const found=list.find(g=>g.files&&g.files['notes.json']&&g.description==='Notes App Backup');
+      if(found){
+        gistId=found.id;
+        localStorage.setItem(GIST_KEY,gistId);
+        await loadFromGist();
+      } else {
+        if(!notes.length) notes=defaultNotes();
+        renderAll();
+        if(notes.length) selectNote(notes[0].id);
+        setSyncStatus('☁ 저장 버튼으로 첫 동기화');
+      }
+    } catch {
+      if(!notes.length) notes=defaultNotes();
+      renderAll();
+      if(notes.length) selectNote(notes[0].id);
+      setSyncStatus('⚠ Gist 검색 실패');
+    }
   }
 }
 
