@@ -92,7 +92,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 #ed-area{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0;}
 #md-ed{flex:1;padding:12px 14px;font-family:'Courier New',monospace;font-size:13px;line-height:1.7;border:none;background:transparent;color:var(--text);resize:none;outline:none;}
 @media(max-width:700px){#md-ed{font-size:15px;}}
-#preview{flex:1;padding:12px 14px;overflow-y:auto;line-height:1.7;font-size:14px;display:none;}
+#preview{flex:1;padding:12px 14px;overflow-y:auto;line-height:1.7;font-size:14px;}
 #preview h1{font-size:20px;font-weight:500;margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:5px;}
 #preview h2{font-size:17px;font-weight:500;margin:10px 0 5px;}
 #preview h3{font-size:15px;font-weight:500;margin:8px 0 4px;}
@@ -221,7 +221,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
       </div>
       <div id="ed-area">
         <textarea id="md-ed" placeholder="마크다운으로 작성하세요...&#10;&#10;팁: **굵게**, *기울임*, - [ ] 체크리스트"></textarea>
-        <div id="preview"></div>
+        <div id="preview" style="display:none"></div>
       </div>
       <div id="footer">
         <span style="font-size:13px;color:var(--text2)">🏷</span>
