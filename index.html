@@ -390,8 +390,17 @@ async function loadGist(){
     if(res.status===404){gistId='';localStorage.removeItem(GK);setSS('⚠ Gist 없음');renderAll();return;}
     const data=await res.json();
     const c=data.files['notes.json']?.content;
-    if(c){const p=JSON.parse(c);notes=Array.isArray(p)?p:(p.notes||[]);localStorage.setItem(LK,JSON.stringify(notes));}
-    setSS('✓ 동기화됨'); renderAll(); if(notes.length) selNote(notes[0].id);
+    if(c){
+      const p=JSON.parse(c);
+      notes=Array.isArray(p)?p:(p.notes||[]);
+      if(p.folders&&Array.isArray(p.folders)) folders=p.folders;
+      localStorage.setItem(LK,JSON.stringify(notes));
+      localStorage.setItem(FK,JSON.stringify(folders));
+    }
+    setSS('✓ 동기화됨');
+    renderFolderTree();
+    renderAll();
+    if(notes.length) selNote(notes[0].id);
   } catch {setSS('⚠ 오프라인'); renderAll(); if(notes.length) selNote(notes[0].id);}
 }
 
