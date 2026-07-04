@@ -476,44 +476,87 @@ window.restoreNote=function(i){
 function renderFolderTree(){
   const tree=document.getElementById('folder-tree');
   tree.innerHTML='';
+
+  // 폴더별 노트 수 계산
+  const countMap={};
+  notes.forEach(n=>{
+    const f=n.folder||'unassigned';
+    countMap[f]=(countMap[f]||0)+1;
+  });
+
+  // 미지정 노트 수 (folder가 없거나 'all'이거나 존재하지 않는 폴더인 경우)
+  const allFolderIds=new Set();
+  const collectIds=(arr)=>arr.forEach(f=>{allFolderIds.add(f.id);if(f.children) collectIds(f.children);});
+  collectIds(folders);
+  let unassigned=0;
+  notes.forEach(n=>{
+    if(!n.folder||n.folder==='all'||(!allFolderIds.has(n.folder)&&n.folder!=='root')) unassigned++;
+  });
+
+  // 전체 항목
+  const allDiv=document.createElement('div');
+  allDiv.className='folder-item'+(afolder==='all'?' active':'');
+  allDiv.innerHTML=`<span class="folder-toggle"></span><span>📋 전체</span><span style="margin-left:auto;font-size:11px;color:var(--text2);padding-right:6px;">${notes.length}</span>`;
+  allDiv.onclick=()=>{afolder='all';atag=null;document.querySelectorAll('.folder-item').forEach(x=>x.classList.remove('active'));allDiv.classList.add('active');renderAll();};
+  tree.appendChild(allDiv);
+
+  // 미지정 항목
+  const unDiv=document.createElement('div');
+  unDiv.className='folder-item'+(afolder==='unassigned'?' active':'');
+  unDiv.innerHTML=`<span class="folder-toggle"></span><span>📂 미지정</span><span style="margin-left:auto;font-size:11px;color:var(--text2);padding-right:6px;">${unassigned}</span>`;
+  unDiv.onclick=()=>{afolder='unassigned';atag=null;document.querySelectorAll('.folder-item').forEach(x=>x.classList.remove('active'));unDiv.classList.add('active');renderAll();};
+  tree.appendChild(unDiv);
+
+  // 폴더 재귀 렌더링
   const render=(items,level)=>{
     items.forEach(f=>{
+      // 이 폴더 + 하위폴더 노트 수 합산
+      const countDeep=(folder)=>{
+        let cnt=countMap[folder.id]||0;
+        if(folder.children) folder.children.forEach(c=>cnt+=countDeep(c));
+        return cnt;
+      };
+      const cnt=countDeep(f);
+
       const div=document.createElement('div');
-      div.className='folder-item';
+      div.className='folder-item'+(afolder===f.id?' active':'');
       div.style.paddingLeft=(8+level*16)+'px';
       div.draggable=true;
-      const toggle=document.createElement('span');
-      toggle.className='folder-toggle';
-      toggle.textContent=(f.children&&f.children.length)?'▼':'';
-      toggle.style.cursor=(f.children&&f.children.length)?'pointer':'default';
-      toggle.onclick=e=>{e.stopPropagation();toggleFolder(f.id);};
-      const span=document.createElement('span');
-      span.textContent='📁 '+f.name;
-      const actions=document.createElement('div');
-      actions.className='folder-actions';
-      actions.innerHTML=`<button onclick="newSubFolder('${f.id}')">+</button><button onclick="delFolder('${f.id}')">−</button>`;
-      div.appendChild(toggle);
-      div.appendChild(span);
-      div.appendChild(actions);
-      div.onclick=()=>{afolder=f.id;atag=null;document.querySelectorAll('.folder-item').forEach(x=>x.classList.remove('active'));div.classList.add('active');renderAll();};
+
+      const hasChildren=f.children&&f.children.length>0;
+      const isOpen=localStorage.getItem('folder-'+f.id)!=='closed';
+
+      div.innerHTML=`
+        <span class="folder-toggle" style="cursor:${hasChildren?'pointer':'default'}">${hasChildren?(isOpen?'▾':'▸'):''}</span>
+        <span>📁 ${f.name}</span>
+        <span style="margin-left:auto;display:flex;align-items:center;gap:4px;">
+          ${cnt>0?`<span style="font-size:11px;color:var(--text2);">${cnt}</span>`:''}
+          <span class="folder-actions" style="display:inline-flex;gap:2px;">
+            <button onclick="event.stopPropagation();newSubFolder('${f.id}')" title="하위폴더">+</button>
+            <button onclick="event.stopPropagation();delFolder('${f.id}')" title="삭제">−</button>
+          </span>
+        </span>`;
+
+      div.querySelector('.folder-toggle').onclick=e=>{
+        e.stopPropagation();
+        if(!hasChildren) return;
+        const closed=localStorage.getItem('folder-'+f.id)==='closed';
+        localStorage.setItem('folder-'+f.id,closed?'open':'closed');
+        renderFolderTree();
+      };
+      div.onclick=()=>{
+        afolder=f.id;atag=null;
+        document.querySelectorAll('.folder-item').forEach(x=>x.classList.remove('active'));
+        div.classList.add('active');renderAll();
+      };
       div.ondragstart=e=>{e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('folderId',f.id);};
       div.ondragover=e=>{e.preventDefault();e.dataTransfer.dropEffect='move';};
-      div.ondrop=e=>{e.preventDefault();const fid=e.dataTransfer.getData('folderId');moveFolder(fid,f.id);};
+      div.ondrop=e=>{e.preventDefault();const nid=e.dataTransfer.getData('noteId');if(nid){const note=notes.find(x=>x.id===nid);if(note){note.folder=f.id;saveL();renderAll();toast(`"${f.name}" 폴더로 이동했습니다.`);}}};
       tree.appendChild(div);
-      if(f.children&&f.children.length){
-        const children=document.createElement('div');
-        children.className='folder-children'+(localStorage.getItem('folder-'+f.id)!=='closed'?'open':'');
-        const childDiv=document.createElement('div');
+
+      // 하위폴더
+      if(hasChildren&&isOpen){
         render(f.children,level+1);
-        f.children.forEach(c=>{
-          const cd=document.createElement('div');
-          cd.style.paddingLeft=(24+level*16)+'px';
-          cd.className='folder-item';
-          cd.innerHTML='📁 '+c.name;
-          cd.onclick=()=>{afolder=c.id;atag=null;document.querySelectorAll('.folder-item').forEach(x=>x.classList.remove('active'));cd.classList.add('active');renderAll();};
-          children.appendChild(cd);
-        });
-        tree.appendChild(children);
       }
     });
   };
@@ -573,13 +616,25 @@ function defNotes(){return [{id:'demo1',title:'환영합니다! 📝',body:'# No
 function saveL(){localStorage.setItem(LK,JSON.stringify(notes));}
 
 function filtered(){
+  // 미지정: folder가 없거나, 존재하지 않는 폴더 ID인 경우
+  const allFolderIds=new Set();
+  const collectIds=(arr)=>arr.forEach(f=>{allFolderIds.add(f.id);if(f.children) collectIds(f.children);});
+  collectIds(folders);
+
   return notes.filter(n=>{
-    if(afolder!=='all'&&n.folder!==afolder) return false;
+    if(afolder==='all'){
+      // 전체
+    } else if(afolder==='unassigned'){
+      if(n.folder&&n.folder!=='all'&&allFolderIds.has(n.folder)) return false;
+    } else {
+      if(n.folder!==afolder) return false;
+    }
     if(atag&&!(n.tags||[]).includes(atag)) return false;
     if(sq){const q=sq.toLowerCase();if(!n.title.toLowerCase().includes(q)&&!n.body.toLowerCase().includes(q)) return false;}
     return true;
   }).sort((a,b)=>b.created-a.created);
 }
+  
 function allTags(){const t=new Set();notes.forEach(n=>(n.tags||[]).forEach(g=>t.add(g)));return[...t];}
 function renderAll(){renderList();renderTags();}
 
