@@ -477,87 +477,92 @@ function renderFolderTree(){
   const tree=document.getElementById('folder-tree');
   tree.innerHTML='';
 
-  // 폴더별 노트 수 계산
-  const countMap={};
-  notes.forEach(n=>{
-    const f=n.folder||'unassigned';
-    countMap[f]=(countMap[f]||0)+1;
-  });
-
-  // 미지정 노트 수 (folder가 없거나 'all'이거나 존재하지 않는 폴더인 경우)
   const allFolderIds=new Set();
   const collectIds=(arr)=>arr.forEach(f=>{allFolderIds.add(f.id);if(f.children) collectIds(f.children);});
   collectIds(folders);
-  let unassigned=0;
-  notes.forEach(n=>{
-    if(!n.folder||n.folder==='all'||(!allFolderIds.has(n.folder)&&n.folder!=='root')) unassigned++;
-  });
 
-  // 전체 항목
+  // 폴더별 노트 수
+  const countMap={};
+  notes.forEach(n=>{const f=n.folder||'unassigned';countMap[f]=(countMap[f]||0)+1;});
+
+  // 미지정 수
+  let unassigned=0;
+  notes.forEach(n=>{if(!n.folder||n.folder==='all'||!allFolderIds.has(n.folder))unassigned++;});
+
+  const badge=(cnt)=>cnt>0?`<span style="margin-left:auto;font-size:11px;color:var(--text2);background:var(--surface2);padding:1px 6px;border-radius:20px;flex-shrink:0;">${cnt}</span>`:'<span style="margin-left:auto;"></span>';
+
+  // 전체
   const allDiv=document.createElement('div');
   allDiv.className='folder-item'+(afolder==='all'?' active':'');
-  allDiv.innerHTML=`<span class="folder-toggle"></span><span>📋 전체</span><span style="margin-left:auto;font-size:11px;color:var(--text2);padding-right:6px;">${notes.length}</span>`;
+  allDiv.style.display='flex';allDiv.style.alignItems='center';
+  allDiv.innerHTML=`<span class="folder-toggle"></span><span>📋 전체</span>${badge(notes.length)}`;
   allDiv.onclick=()=>{afolder='all';atag=null;document.querySelectorAll('.folder-item').forEach(x=>x.classList.remove('active'));allDiv.classList.add('active');renderAll();};
   tree.appendChild(allDiv);
 
-  // 미지정 항목
+  // 즐겨찾기
+  const favCnt=notes.filter(n=>n.favorite).length;
+  const favDiv=document.createElement('div');
+  favDiv.className='folder-item'+(afolder==='favorite'?' active':'');
+  favDiv.style.display='flex';favDiv.style.alignItems='center';
+  favDiv.innerHTML=`<span class="folder-toggle"></span><span>⭐ 즐겨찾기</span>${badge(favCnt)}`;
+  favDiv.onclick=()=>{afolder='favorite';atag=null;document.querySelectorAll('.folder-item').forEach(x=>x.classList.remove('active'));favDiv.classList.add('active');renderAll();};
+  tree.appendChild(favDiv);
+
+  // 미지정
   const unDiv=document.createElement('div');
   unDiv.className='folder-item'+(afolder==='unassigned'?' active':'');
-  unDiv.innerHTML=`<span class="folder-toggle"></span><span>📂 미지정</span><span style="margin-left:auto;font-size:11px;color:var(--text2);padding-right:6px;">${unassigned}</span>`;
+  unDiv.style.display='flex';unDiv.style.alignItems='center';
+  unDiv.innerHTML=`<span class="folder-toggle"></span><span>📂 미지정</span>${badge(unassigned)}`;
   unDiv.onclick=()=>{afolder='unassigned';atag=null;document.querySelectorAll('.folder-item').forEach(x=>x.classList.remove('active'));unDiv.classList.add('active');renderAll();};
   tree.appendChild(unDiv);
 
-  // 폴더 재귀 렌더링
+  // 폴더 재귀
   const render=(items,level)=>{
     items.forEach(f=>{
-      // 이 폴더 + 하위폴더 노트 수 합산
-      const countDeep=(folder)=>{
-        let cnt=countMap[folder.id]||0;
-        if(folder.children) folder.children.forEach(c=>cnt+=countDeep(c));
-        return cnt;
-      };
+      const countDeep=(folder)=>{let cnt=countMap[folder.id]||0;if(folder.children)folder.children.forEach(c=>cnt+=countDeep(c));return cnt;};
       const cnt=countDeep(f);
-
-      const div=document.createElement('div');
-      div.className='folder-item'+(afolder===f.id?' active':'');
-      div.style.paddingLeft=(8+level*16)+'px';
-      div.draggable=true;
-
       const hasChildren=f.children&&f.children.length>0;
       const isOpen=localStorage.getItem('folder-'+f.id)!=='closed';
 
-      div.innerHTML=`
-        <span class="folder-toggle" style="cursor:${hasChildren?'pointer':'default'}">${hasChildren?(isOpen?'▾':'▸'):''}</span>
-        <span>📁 ${f.name}</span>
-        <span style="margin-left:auto;display:flex;align-items:center;gap:4px;">
-          ${cnt>0?`<span style="font-size:11px;color:var(--text2);">${cnt}</span>`:''}
-          <span class="folder-actions" style="display:inline-flex;gap:2px;">
-            <button onclick="event.stopPropagation();newSubFolder('${f.id}')" title="하위폴더">+</button>
-            <button onclick="event.stopPropagation();delFolder('${f.id}')" title="삭제">−</button>
-          </span>
+      const div=document.createElement('div');
+      div.className='folder-item'+(afolder===f.id?' active':'');
+      div.style.cssText=`padding-left:${8+level*16}px;display:flex;align-items:center;`;
+      div.draggable=true;
+
+      const toggleSpan=document.createElement('span');
+      toggleSpan.className='folder-toggle';
+      toggleSpan.textContent=hasChildren?(isOpen?'▾':'▸'):'';
+      toggleSpan.style.cursor=hasChildren?'pointer':'default';
+      toggleSpan.onclick=e=>{e.stopPropagation();if(!hasChildren)return;localStorage.setItem('folder-'+f.id,localStorage.getItem('folder-'+f.id)==='closed'?'open':'closed');renderFolderTree();};
+
+      const nameSpan=document.createElement('span');
+      nameSpan.textContent='📁 '+f.name;
+      nameSpan.style.flex='1';
+
+      const right=document.createElement('span');
+      right.style.cssText='display:flex;align-items:center;gap:4px;flex-shrink:0;';
+      right.innerHTML=`${cnt>0?`<span style="font-size:11px;color:var(--text2);background:var(--surface2);padding:1px 6px;border-radius:20px;">${cnt}</span>`:''}
+        <span class="folder-actions" style="display:inline-flex;gap:2px;">
+          <button onclick="event.stopPropagation();newSubFolder('${f.id}')" title="하위폴더 추가">+</button>
+          <button onclick="event.stopPropagation();delFolder('${f.id}')" title="삭제">−</button>
         </span>`;
 
-      div.querySelector('.folder-toggle').onclick=e=>{
-        e.stopPropagation();
-        if(!hasChildren) return;
-        const closed=localStorage.getItem('folder-'+f.id)==='closed';
-        localStorage.setItem('folder-'+f.id,closed?'open':'closed');
-        renderFolderTree();
+      div.appendChild(toggleSpan);
+      div.appendChild(nameSpan);
+      div.appendChild(right);
+
+      div.onclick=()=>{afolder=f.id;atag=null;document.querySelectorAll('.folder-item').forEach(x=>x.classList.remove('active'));div.classList.add('active');renderAll();};
+      div.ondragstart=e=>{e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('noteId_folder',f.id);};
+      div.ondragover=e=>{e.preventDefault();div.style.background='var(--surface2)';};
+      div.ondragleave=()=>{div.style.background='';};
+      div.ondrop=e=>{
+        e.preventDefault();div.style.background='';
+        const nid=e.dataTransfer.getData('noteId');
+        if(nid){const note=notes.find(x=>x.id===nid);if(note){note.folder=f.id;saveL();renderFolderTree();renderAll();toast(`"${f.name}" 폴더로 이동했습니다.`);}}
       };
-      div.onclick=()=>{
-        afolder=f.id;atag=null;
-        document.querySelectorAll('.folder-item').forEach(x=>x.classList.remove('active'));
-        div.classList.add('active');renderAll();
-      };
-      div.ondragstart=e=>{e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('folderId',f.id);};
-      div.ondragover=e=>{e.preventDefault();e.dataTransfer.dropEffect='move';};
-      div.ondrop=e=>{e.preventDefault();const nid=e.dataTransfer.getData('noteId');if(nid){const note=notes.find(x=>x.id===nid);if(note){note.folder=f.id;saveL();renderAll();toast(`"${f.name}" 폴더로 이동했습니다.`);}}};
       tree.appendChild(div);
 
-      // 하위폴더
-      if(hasChildren&&isOpen){
-        render(f.children,level+1);
-      }
+      if(hasChildren&&isOpen) render(f.children,level+1);
     });
   };
   render(folders,0);
@@ -616,16 +621,17 @@ function defNotes(){return [{id:'demo1',title:'환영합니다! 📝',body:'# No
 function saveL(){localStorage.setItem(LK,JSON.stringify(notes));}
 
 function filtered(){
-  // 미지정: folder가 없거나, 존재하지 않는 폴더 ID인 경우
   const allFolderIds=new Set();
-  const collectIds=(arr)=>arr.forEach(f=>{allFolderIds.add(f.id);if(f.children) collectIds(f.children);});
+  const collectIds=(arr)=>arr.forEach(f=>{allFolderIds.add(f.id);if(f.children)collectIds(f.children);});
   collectIds(folders);
 
   return notes.filter(n=>{
     if(afolder==='all'){
       // 전체
+    } else if(afolder==='favorite'){
+      if(!n.favorite) return false;
     } else if(afolder==='unassigned'){
-      if(n.folder&&n.folder!=='all'&&allFolderIds.has(n.folder)) return false;
+      if(n.folder&&allFolderIds.has(n.folder)) return false;
     } else {
       if(n.folder!==afolder) return false;
     }
