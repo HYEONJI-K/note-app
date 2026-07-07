@@ -282,7 +282,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
       <option value="serif">바탕</option>
     </select>
     <div class="modal-row"><span>글자 크기: <span id="fs-val">13</span>px</span></div>
-    <input type="range" id="font-size-range" min="11" max="20" value="13" style="width:100%;"/>
+    <input type="range" id="font-size-range" min="11" max="30" value="13" style="width:100%;"/>
     <div class="modal-btns">
       <button class="btn-ok" onclick="closeModal('settings-modal')">완료</button>
     </div>
@@ -330,6 +330,7 @@ function applySettings(){
   document.getElementById('font-sel').value=font;
   const fs=localStorage.getItem('s-fs')||'13';
   document.getElementById('md-ed').style.fontSize=fs+'px';
+  document.getElementById('preview').style.fontSize=fs+'px';
   document.getElementById('font-size-range').value=fs;
   document.getElementById('fs-val').textContent=fs;
 }
@@ -454,6 +455,7 @@ document.getElementById('font-sel').onchange=e=>{
 document.getElementById('font-size-range').oninput=e=>{
   const v=e.target.value;
   document.getElementById('md-ed').style.fontSize=v+'px';
+  document.getElementById('preview').style.fontSize=v+'px';
   document.getElementById('fs-val').textContent=v;
   localStorage.setItem('s-fs',v);
 };
