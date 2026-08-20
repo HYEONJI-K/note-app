@@ -6,15 +6,12 @@
 <title>Notes</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-
 body.light{--bg:#f5f5f3;--surface:#fff;--surface2:#f0ede8;--surface0:#ece9e3;--border:rgba(0,0,0,0.1);--text:#1a1a18;--text2:#6b6b67;--accent:#2563eb;--accent-bg:#eff6ff;--danger:#dc2626;}
 body.light-white{--bg:#ffffff;--surface:#f8f8f8;--surface2:#efefef;--surface0:#e8e8e8;--border:rgba(0,0,0,0.08);--text:#111;--text2:#555;--accent:#2563eb;--accent-bg:#eff6ff;--danger:#dc2626;}
 body.light-green{--bg:#f0f4f0;--surface:#fff;--surface2:#e4ede4;--surface0:#d6e8d6;--border:rgba(0,80,0,0.12);--text:#1a2e1a;--text2:#4a6b4a;--accent:#2d7a2d;--accent-bg:#e8f5e8;--danger:#b91c1c;}
 body.dark{--bg:#1a1a1a;--surface:#2a2a2a;--surface2:#3a3a3a;--surface0:#333;--border:rgba(255,255,255,0.12);--text:#e4e4e4;--text2:#b0b0b0;--accent:#4a9eff;--accent-bg:#1e3a5f;--danger:#ff6b6b;}
-
 html,body{height:100%;overflow:hidden;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;color:var(--text);background:var(--bg);display:flex;flex-direction:column;}
-
 #token-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:14px;padding:20px;}
 #token-screen h1{font-size:22px;font-weight:500;}
 #token-screen p{color:var(--text2);font-size:13px;max-width:320px;text-align:center;line-height:1.6;}
@@ -23,9 +20,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 #token-input{flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:13px;outline:none;}
 #token-btn{padding:8px 16px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;font-size:13px;}
 #token-err{color:var(--danger);font-size:12px;display:none;}
-
 #app{display:none;flex-direction:column;flex:1;min-height:0;}
-
 #topbar{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
 #menu-btn{display:none;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:transparent;cursor:pointer;font-size:17px;color:var(--text);flex-shrink:0;}
 #topbar h1{font-size:15px;font-weight:500;flex:1;min-width:0;}
@@ -37,9 +32,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .tbtn.on{border-color:var(--accent);}
 #tb-beige{background:#f0ede8;}#tb-white{background:#ddd;}#tb-green{background:#c8e6c8;}#tb-dark{background:#333;}
 #gh-avatar{width:24px;height:24px;border-radius:50%;flex-shrink:0;}
-
 #workspace{display:flex;flex:1;min-height:0;overflow:hidden;position:relative;}
-
 #sidebar{width:210px;min-width:210px;border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--surface0);overflow:hidden;flex-shrink:0;}
 #search{margin:8px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:13px;outline:none;width:calc(100% - 16px);}
 #folder-tree{overflow-y:auto;padding:4px;flex-shrink:0;}
@@ -67,10 +60,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .io-row{display:flex;gap:3px;}
 .io-btn{flex:1;padding:5px 2px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text2);cursor:pointer;font-size:11px;}
 .io-btn:hover{background:var(--surface);}
-
 #overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;}
 #overlay.open{display:block;}
-
 @media(max-width:700px){
   #menu-btn{display:flex;}
   #sync-status{display:none;}
@@ -79,7 +70,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
   .tbtn{width:16px;height:16px;}
   #topbar h1{font-size:13px;}
 }
-
 #main{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden;}
 #ed-header{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
 #title-in{flex:1;font-size:16px;font-weight:500;border:none;background:transparent;color:var(--text);outline:none;min-width:0;}
@@ -92,7 +82,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .tb:hover{background:var(--surface2);}
 .tsep{width:1px;background:var(--border);margin:0 2px;align-self:stretch;}
 @media(max-width:700px){.tb{padding:5px 7px;font-size:13px;}}
-
 #ed-area{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
 #md-ed{flex:1;min-height:0;padding:12px 14px;font-family:'Courier New',monospace;font-size:13px;line-height:1.7;border:none;background:transparent;color:var(--text);resize:none;outline:none;}
 @media(max-width:700px){#md-ed{font-size:15px;padding:10px 12px;}}
@@ -119,17 +108,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .done{text-decoration:line-through;color:var(--text2);}
 .cb-wrap{position:relative;}
 .copy-btn{position:absolute;top:5px;right:5px;padding:2px 7px;font-size:11px;border:1px solid var(--border);border-radius:3px;background:var(--surface);color:var(--text2);cursor:pointer;}
-
+#preview img{max-width:100%;border-radius:6px;margin:4px 0;display:block;}
 #footer{padding:5px 12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:7px;background:var(--surface);flex-shrink:0;}
 #tag-wrap{display:flex;flex-wrap:wrap;align-items:center;gap:3px;flex:1;min-width:0;position:relative;}
 .ftag{display:flex;align-items:center;gap:2px;font-size:11px;padding:2px 6px;border-radius:20px;background:var(--accent-bg);color:var(--accent);}
 .ftag button{background:none;border:none;cursor:pointer;color:var(--accent);font-size:11px;padding:0;line-height:1;}
 #folder-sel{border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text2);font-size:12px;padding:3px 5px;outline:none;max-width:80px;}
 #del-btn{padding:4px 7px;border:1px solid #f09595;border-radius:6px;background:transparent;color:var(--danger);cursor:pointer;font-size:12px;flex-shrink:0;}
-
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;align-items:center;justify-content:center;}
 .modal.open{display:flex;}
-.modal-box{background:var(--surface);border-radius:12px;padding:20px;width:90%;max-width:380px;max-height:80vh;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+.modal-box{background:var(--surface);border-radius:12px;padding:20px;width:90%;max-width:420px;max-height:85vh;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
 .modal-box h2{font-size:15px;font-weight:500;}
 .modal-box input[type=text],.modal-box select{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);color:var(--text);font-size:13px;outline:none;}
 .modal-row{display:flex;align-items:center;justify-content:space-between;font-size:13px;}
@@ -139,6 +127,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .btn-ok{background:var(--accent);color:#fff;}
 .btn-danger{background:var(--danger);color:#fff;}
 
+/* 파일 관련 */
+.file-item{display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);margin-bottom:6px;}
+.file-item-icon{font-size:20px;flex-shrink:0;}
+.file-item-info{flex:1;min-width:0;}
+.file-item-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.file-item-size{font-size:11px;color:var(--text2);}
+.file-item-btns{display:flex;gap:4px;flex-shrink:0;}
+.file-item-btns button{padding:4px 8px;border:1px solid var(--border);border-radius:5px;background:transparent;cursor:pointer;font-size:11px;color:var(--text2);}
+.file-item-btns button:hover{background:var(--surface);}
+.file-upload-zone{border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;color:var(--text2);font-size:13px;transition:border-color .2s;}
+.file-upload-zone:hover,.file-upload-zone.drag{border-color:var(--accent);color:var(--accent);}
+.repo-setting{display:flex;flex-direction:column;gap:6px;padding:10px;background:var(--surface2);border-radius:8px;font-size:12px;}
+.repo-setting input{font-size:12px;}
 #toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);border-radius:7px;padding:7px 14px;font-size:13px;pointer-events:none;opacity:0;transition:opacity .3s;z-index:400;white-space:nowrap;}
 </style>
 </head>
@@ -147,7 +148,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 <div id="token-screen">
   <h1>📝 Notes</h1>
   <p>GitHub Personal Access Token을 입력하세요.<br>
-    <a href="https://github.com/settings/tokens/new?scopes=gist&description=notes-app" target="_blank">토큰 발급 바로가기 (gist 권한만)</a>
+    <a href="https://github.com/settings/tokens/new?scopes=gist,repo&description=notes-app" target="_blank">토큰 발급 바로가기 (gist + repo 권한)</a>
   </p>
   <div class="token-box">
     <input id="token-input" type="password" placeholder="ghp_..."/>
@@ -167,10 +168,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
       <div class="tbtn" data-t="light-green" id="tb-green" title="그린"></div>
       <div class="tbtn" data-t="dark" id="tb-dark" title="다크"></div>
       <button class="icon-btn" id="new-folder-btn" title="새 폴더">📁+</button>
+      <button class="icon-btn" id="file-mgr-btn" title="파일 관리">📎</button>
       <button class="icon-btn" id="settings-btn" title="설정">⚙</button>
       <button class="icon-btn" id="trash-btn" title="휴지통">🗑</button>
       <img id="gh-avatar" src="" alt=""/>
-      <button class="icon-btn" id="logout-btn" title="로그아웃" style="font-size:12px;">로그아웃</button>
+      <button class="icon-btn" id="logout-btn" style="font-size:12px;">로그아웃</button>
     </div>
   </div>
 
@@ -219,6 +221,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
         <button class="tb" data-a="hr">—</button>
         <span class="tsep"></span>
         <button class="tb" data-a="table">표</button>
+        <button class="tb" data-a="attach">📎</button>
+        <input type="file" id="attach-file" style="display:none" multiple/>
       </div>
       <div id="ed-area">
         <textarea id="md-ed" placeholder="마크다운으로 작성하세요...&#10;&#10;(Ctrl+S 저장)"></textarea>
@@ -260,8 +264,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
     </select>
     <div class="modal-row"><span>글자 크기: <span id="fs-val">13</span>px</span></div>
     <input type="range" id="font-size-range" min="11" max="30" value="13" style="width:100%;"/>
+    <div style="border-top:1px solid var(--border);padding-top:12px;">
+      <div class="modal-row" style="margin-bottom:8px;"><span style="font-weight:500;">📁 파일 저장소 설정</span></div>
+      <div class="repo-setting">
+        <span style="color:var(--text2);">파일을 저장할 GitHub 저장소 (repo 권한 필요)</span>
+        <input type="text" id="repo-owner-in" placeholder="GitHub 아이디 (예: hyeonji-k)"/>
+        <input type="text" id="repo-name-in" placeholder="저장소 이름 (예: notes-files)"/>
+        <button class="btn-ok" id="save-repo-btn" style="padding:7px;border-radius:7px;border:none;cursor:pointer;font-size:12px;">저장</button>
+      </div>
+    </div>
     <div class="modal-btns">
       <button class="btn-ok" onclick="closeModal('settings-modal')">완료</button>
+    </div>
+  </div>
+</div>
+
+<!-- 파일 관리 모달 -->
+<div id="file-modal" class="modal">
+  <div class="modal-box">
+    <h2>📎 파일 관리</h2>
+    <div id="file-upload-zone" class="file-upload-zone">
+      📁 클릭하거나 파일을 드래그하세요<br>
+      <span style="font-size:11px;margin-top:4px;display:block;">이미지, 문서, PDF 등 모든 파일</span>
+    </div>
+    <input type="file" id="file-upload-input" style="display:none" multiple/>
+    <div id="file-list" style="max-height:300px;overflow-y:auto;"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('file-modal')">닫기</button>
     </div>
   </div>
 </div>
@@ -281,8 +310,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 <div id="toast"></div>
 
 <script>
-const TK='notes_gh_token',GK='notes_gist_id',LK='notes_local_v1',FK='notes_folders_v1',TRASHK='notes_trash_v1';
+const TK='notes_gh_token',GK='notes_gist_id',LK='notes_local_v1',FK='notes_folders_v1',TRASHK='notes_trash_v1',RK='notes_repo_v1';
 let token='',gistId='',notes=[],folders=[],trash=[],cur=null,afolder='all',atag=null,sq='',editMode=true;
+let repoOwner='',repoName='';
 
 // ── 테마 ──────────────────────────────────────────
 function applyTheme(t){
@@ -299,6 +329,8 @@ window.onload=()=>{
   notes=JSON.parse(localStorage.getItem(LK)||'[]');
   folders=JSON.parse(localStorage.getItem(FK)||'[]');
   trash=JSON.parse(localStorage.getItem(TRASHK)||'[]');
+  const repo=JSON.parse(localStorage.getItem(RK)||'{}');
+  repoOwner=repo.owner||'';repoName=repo.name||'';
   applySettings();
   if(token) boot();
 };
@@ -314,19 +346,23 @@ function applySettings(){
   document.getElementById('preview').style.fontSize=fs+'px';
   document.getElementById('font-size-range').value=fs;
   document.getElementById('fs-val').textContent=fs;
+  document.getElementById('repo-owner-in').value=repoOwner;
+  document.getElementById('repo-name-in').value=repoName;
 }
 
 // ── 로그인 ────────────────────────────────────────
 document.getElementById('token-btn').onclick=async()=>{
   const val=document.getElementById('token-input').value.trim();
-  if(!val) return;
+  if(!val)return;
   const btn=document.getElementById('token-btn');
   btn.textContent='확인 중...';btn.disabled=true;
   try{
     const res=await fetch('https://api.github.com/user',{headers:{Authorization:`token ${val}`}});
-    if(!res.ok) throw 0;
+    if(!res.ok)throw 0;
     const u=await res.json();
     setAvatar(u.avatar_url);
+    // repo owner 자동 설정
+    if(!repoOwner){repoOwner=u.login;document.getElementById('repo-owner-in').value=repoOwner;}
     token=val;localStorage.setItem(TK,token);
     document.getElementById('token-err').style.display='none';
     boot();
@@ -339,7 +375,7 @@ function setAvatar(url){document.getElementById('gh-avatar').src=url||'';}
 
 // ── 부트 ──────────────────────────────────────────
 async function boot(){
-  try{const r=await fetch('https://api.github.com/user',{headers:{Authorization:`token ${token}`}});const u=await r.json();setAvatar(u.avatar_url);}catch{}
+  try{const r=await fetch('https://api.github.com/user',{headers:{Authorization:`token ${token}`}});const u=await r.json();setAvatar(u.avatar_url);if(!repoOwner)repoOwner=u.login;}catch{}
   document.getElementById('token-screen').style.display='none';
   document.getElementById('app').style.display='flex';
   renderFolders();renderAll();
@@ -416,32 +452,206 @@ document.getElementById('font-size-range').oninput=e=>{
   document.getElementById('fs-val').textContent=v;
   localStorage.setItem('s-fs',v);
 };
+document.getElementById('save-repo-btn').onclick=()=>{
+  const o=document.getElementById('repo-owner-in').value.trim();
+  const n=document.getElementById('repo-name-in').value.trim();
+  if(!o||!n){toast('저장소 정보를 입력하세요.');return;}
+  repoOwner=o;repoName=n;
+  localStorage.setItem(RK,JSON.stringify({owner:o,name:n}));
+  toast('저장소 설정이 저장됐어요!');
+};
 
 // ── 모달 ──────────────────────────────────────────
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+// ── 파일 업로드 (GitHub Repo API) ─────────────────
+function fileIcon(name){
+  const ext=name.split('.').pop().toLowerCase();
+  if(['jpg','jpeg','png','gif','webp','svg'].includes(ext))return '🖼';
+  if(['pdf'].includes(ext))return '📄';
+  if(['zip','rar','7z'].includes(ext))return '🗜';
+  if(['mp4','mov','avi'].includes(ext))return '🎬';
+  if(['mp3','wav','m4a'].includes(ext))return '🎵';
+  if(['doc','docx'].includes(ext))return '📝';
+  if(['xls','xlsx'].includes(ext))return '📊';
+  if(['ppt','pptx'].includes(ext))return '📊';
+  return '📎';
+}
+
+function fmtSize(bytes){
+  if(bytes<1024)return bytes+'B';
+  if(bytes<1024*1024)return (bytes/1024).toFixed(1)+'KB';
+  return (bytes/1024/1024).toFixed(1)+'MB';
+}
+
+async function uploadFileToRepo(file){
+  if(!repoOwner||!repoName){
+    toast('설정(⚙)에서 파일 저장소를 먼저 설정하세요.');
+    openModal('settings-modal');return null;
+  }
+  const reader=new FileReader();
+  return new Promise(resolve=>{
+    reader.onload=async ev=>{
+      const base64=ev.target.result.split(',')[1];
+      const path=`files/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9가-힣._-]/g,'_')}`;
+      try{
+        const r=await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`,{
+          method:'PUT',
+          headers:{Authorization:`token ${token}`,'Content-Type':'application/json'},
+          body:JSON.stringify({message:`Upload ${file.name}`,content:base64})
+        });
+        if(!r.ok){
+          const err=await r.json();
+          if(err.message&&err.message.includes('Not Found')){
+            toast('저장소를 찾을 수 없어요. 설정에서 저장소 이름을 확인하세요.');
+          }else if(err.message&&err.message.includes('Bad credentials')){
+            toast('토큰에 repo 권한이 없어요. 새 토큰을 발급해 주세요.');
+          }else{
+            toast('업로드 실패: '+err.message);
+          }
+          resolve(null);return;
+        }
+        const d=await r.json();
+        resolve({name:file.name,path,url:d.content.download_url,size:file.size,sha:d.content.sha,type:file.type});
+      }catch{toast('업로드 중 오류가 발생했습니다.');resolve(null);}
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function listRepoFiles(){
+  if(!repoOwner||!repoName)return[];
+  try{
+    const r=await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/files`,{
+      headers:{Authorization:`token ${token}`}
+    });
+    if(r.status===404)return[];
+    if(!r.ok)return[];
+    return await r.json();
+  }catch{return[];}
+}
+
+async function deleteRepoFile(path,sha){
+  await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`,{
+    method:'DELETE',
+    headers:{Authorization:`token ${token}`,'Content-Type':'application/json'},
+    body:JSON.stringify({message:`Delete ${path}`,sha})
+  });
+}
+
+// ── 파일 관리 모달 ──────────────────────────────
+document.getElementById('file-mgr-btn').onclick=async()=>{
+  openModal('file-modal');
+  await refreshFileList();
+};
+
+async function refreshFileList(){
+  const listEl=document.getElementById('file-list');
+  listEl.innerHTML='<div style="padding:10px;text-align:center;color:var(--text2);font-size:12px;">불러오는 중...</div>';
+  if(!repoOwner||!repoName){
+    listEl.innerHTML='<div style="padding:10px;text-align:center;color:var(--text2);font-size:12px;">⚙ 설정에서 파일 저장소를 먼저 설정하세요.</div>';
+    return;
+  }
+  const files=await listRepoFiles();
+  listEl.innerHTML='';
+  if(!files.length){
+    listEl.innerHTML='<div style="padding:10px;text-align:center;color:var(--text2);font-size:12px;">업로드된 파일이 없습니다.</div>';
+    return;
+  }
+  files.forEach(f=>{
+    const isImg=['jpg','jpeg','png','gif','webp','svg'].includes(f.name.split('.').pop().toLowerCase());
+    const d=document.createElement('div');
+    d.className='file-item';
+    d.innerHTML=`
+      <div class="file-item-icon">${fileIcon(f.name)}</div>
+      <div class="file-item-info">
+        <div class="file-item-name">${f.name}</div>
+        <div class="file-item-size">${fmtSize(f.size||0)}</div>
+      </div>
+      <div class="file-item-btns">
+        ${isImg?`<button onclick="insertImgToNote('${f.download_url}','${f.name}')">삽입</button>`:''}
+        <button onclick="insertLinkToNote('${f.download_url}','${f.name}')">링크</button>
+        <button onclick="window.open('${f.download_url}','_blank')">다운</button>
+        <button onclick="confirmDeleteFile('${f.path}','${f.sha}')" style="color:var(--danger);">삭제</button>
+      </div>`;
+    listEl.appendChild(d);
+  });
+}
+
+window.insertImgToNote=function(url,name){
+  ins(`\n![${name}](${url})\n`);
+  closeModal('file-modal');
+  toast('이미지를 노트에 삽입했습니다.');
+};
+window.insertLinkToNote=function(url,name){
+  ins(`[${name}](${url})`);
+  closeModal('file-modal');
+  toast('링크를 노트에 삽입했습니다.');
+};
+window.confirmDeleteFile=async function(path,sha){
+  if(!confirm('파일을 삭제할까요?'))return;
+  await deleteRepoFile(path,sha);
+  toast('삭제됐습니다.');
+  await refreshFileList();
+};
+
+// 파일 업로드 존
+const uploadZone=document.getElementById('file-upload-zone');
+const uploadInput=document.getElementById('file-upload-input');
+uploadZone.onclick=()=>uploadInput.click();
+uploadZone.ondragover=e=>{e.preventDefault();uploadZone.classList.add('drag');};
+uploadZone.ondragleave=()=>uploadZone.classList.remove('drag');
+uploadZone.ondrop=async e=>{
+  e.preventDefault();uploadZone.classList.remove('drag');
+  await handleFileUpload([...e.dataTransfer.files]);
+};
+uploadInput.onchange=async e=>{
+  await handleFileUpload([...e.target.files]);
+  e.target.value='';
+};
+
+async function handleFileUpload(files){
+  if(!files.length)return;
+  uploadZone.textContent='업로드 중...';
+  let ok=0;
+  for(const f of files){
+    const result=await uploadFileToRepo(f);
+    if(result)ok++;
+  }
+  uploadZone.innerHTML='📁 클릭하거나 파일을 드래그하세요<br><span style="font-size:11px;margin-top:4px;display:block;">이미지, 문서, PDF 등 모든 파일</span>';
+  if(ok>0){toast(`${ok}개 파일 업로드 완료!`);await refreshFileList();}
+}
+
+// 툴바 첨부 버튼
+document.getElementById('attach-file').onchange=async e=>{
+  const files=[...e.target.files];
+  if(!files.length)return;
+  toast('업로드 중...');
+  for(const f of files){
+    const result=await uploadFileToRepo(f);
+    if(result){
+      const isImg=['jpg','jpeg','png','gif','webp','svg'].includes(f.name.split('.').pop().toLowerCase());
+      if(isImg)ins(`\n![${f.name}](${result.url})\n`);
+      else ins(`[${f.name}](${result.url})`);
+    }
+  }
+  e.target.value='';
+  toast('첨부 완료!');
+};
 
 // ── 폴더 ──────────────────────────────────────────
 function saveF(){localStorage.setItem(FK,JSON.stringify(folders));}
 function flatFolders(list,depth=0){let res=[];(list||[]).forEach(f=>{res.push({...f,depth});if(f.children)res=res.concat(flatFolders(f.children,depth+1));});return res;}
 
 function renderFolders(){
-  const tree=document.getElementById('folder-tree');
-  tree.innerHTML='';
-  const mkItem=(text,fid)=>{
-    const d=document.createElement('div');
-    d.className='folder-item'+(afolder===fid?' on':'');
-    d.innerHTML=text;
-    d.onclick=()=>{afolder=fid;atag=null;renderFolders();renderAll();};
-    return d;
-  };
+  const tree=document.getElementById('folder-tree');tree.innerHTML='';
+  const mkItem=(text,fid)=>{const d=document.createElement('div');d.className='folder-item'+(afolder===fid?' on':'');d.innerHTML=text;d.onclick=()=>{afolder=fid;atag=null;renderFolders();renderAll();};return d;};
   tree.appendChild(mkItem('📋 전체 노트','all'));
   tree.appendChild(mkItem('⭐ 즐겨찾기','fav'));
   const renderList=(list,depth)=>{
     (list||[]).forEach(f=>{
-      const d=document.createElement('div');
-      d.className='folder-item'+(afolder===f.id?' on':'');
-      d.style.paddingLeft=(10+depth*14)+'px';
+      const d=document.createElement('div');d.className='folder-item'+(afolder===f.id?' on':'');d.style.paddingLeft=(10+depth*14)+'px';
       d.innerHTML=`<span style="margin-right:4px;">${f.children&&f.children.length?'📂':'📁'}</span><span style="flex:1;">${f.name}</span><span style="font-size:10px;color:var(--text2);cursor:pointer;padding:0 4px;" onclick="event.stopPropagation();delFolder('${f.id}')">✕</span>`;
       d.onclick=()=>{afolder=f.id;atag=null;renderFolders();renderAll();};
       tree.appendChild(d);
@@ -449,11 +659,9 @@ function renderFolders(){
     });
   };
   renderList(folders,0);
-  // folder-sel
   const sel=document.getElementById('folder-sel');
   sel.innerHTML='<option value="all">미지정</option>';
   flatFolders(folders).forEach(f=>{const o=document.createElement('option');o.value=f.id;o.textContent='　'.repeat(f.depth)+'📁 '+f.name;sel.appendChild(o);});
-  // parent-sel
   const psel=document.getElementById('parent-sel');
   psel.innerHTML='<option value="root">루트 (최상위)</option>';
   flatFolders(folders).forEach(f=>{const o=document.createElement('option');o.value=f.id;o.textContent='　'.repeat(f.depth)+'📁 '+f.name;psel.appendChild(o);});
@@ -503,12 +711,12 @@ window.restoreNote=function(i){
 
 // ── 노트 ──────────────────────────────────────────
 function genId(){return 'n'+Date.now()+Math.random().toString(36).slice(2);}
-function defNotes(){return [{id:'demo1',title:'환영합니다! 📝',body:'# Notes 앱\n\n**GitHub Gist**에 동기화됩니다.\n\n- [x] 마크다운 지원\n- [x] 기기 간 동기화\n- [x] 폴더 & 태그\n- [x] 다크모드\n- [x] 휴지통\n- [x] 즐겨찾기\n- [ ] 나만의 노트 작성',folder:'all',tags:['가이드'],created:Date.now(),favorite:false}];}
+function defNotes(){return [{id:'demo1',title:'환영합니다! 📝',body:'# Notes 앱\n\n**GitHub Gist**에 노트를, **GitHub 저장소**에 파일을 저장합니다.\n\n- [x] 마크다운 지원\n- [x] 기기 간 동기화\n- [x] 폴더 & 태그\n- [x] 다크모드\n- [x] 파일 업로드/다운로드\n- [ ] 나만의 노트 작성\n\n## 파일 첨부 방법\n\n1. 툴바의 📎 버튼으로 직접 첨부\n2. 상단 📎 버튼으로 파일 관리\n3. 설정(⚙)에서 저장소 먼저 설정 필요',folder:'all',tags:['가이드'],created:Date.now(),favorite:false}];}
 function saveL(){localStorage.setItem(LK,JSON.stringify(notes));}
 
 function filtered(){
   return notes.filter(n=>{
-    if(afolder==='fav') return n.favorite;
+    if(afolder==='fav')return n.favorite;
     if(afolder!=='all'&&n.folder!==afolder)return false;
     if(atag&&!(n.tags||[]).includes(atag))return false;
     if(sq){const q=sq.toLowerCase();if(!n.title.toLowerCase().includes(q)&&!n.body.toLowerCase().includes(q))return false;}
@@ -558,28 +766,21 @@ function renderFTags(tags){
     s.querySelector('button').onclick=()=>rmTag(t);
     w.appendChild(s);
   });
-
-  // 태그 입력 + 자동완성
   const wrap2=document.createElement('div');
   wrap2.style.cssText='position:relative;display:inline-flex;';
-
   const inp=document.createElement('input');
   inp.id='tag-in';inp.placeholder='태그 추가...';
   inp.style.cssText='border:none;background:transparent;color:var(--text2);font-size:12px;outline:none;width:80px;';
-
   const ac=document.createElement('div');
   ac.style.cssText='position:absolute;bottom:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:6px;font-size:12px;z-index:50;max-height:150px;overflow-y:auto;display:none;box-shadow:0 -4px 12px rgba(0,0,0,0.15);min-width:120px;';
-
   inp.oninput=()=>{
-    const q=inp.value.trim().toLowerCase();
-    ac.innerHTML='';
+    const q=inp.value.trim().toLowerCase();ac.innerHTML='';
     if(!q){ac.style.display='none';return;}
     const curTags=(notes.find(x=>x.id===cur)?.tags||[]);
     const matches=allTags().filter(t=>t.toLowerCase().includes(q)&&!curTags.includes(t));
     if(!matches.length){ac.style.display='none';return;}
     matches.forEach(t=>{
-      const item=document.createElement('div');
-      item.textContent=t;
+      const item=document.createElement('div');item.textContent=t;
       item.style.cssText='padding:6px 10px;cursor:pointer;white-space:nowrap;';
       item.onmousedown=e=>{e.preventDefault();addTag(t);inp.value='';ac.style.display='none';};
       item.onmouseover=()=>item.style.background='var(--surface2)';
@@ -588,56 +789,18 @@ function renderFTags(tags){
     });
     ac.style.display='block';
   };
-
   inp.onkeydown=e=>{
-    if(e.key==='Enter'||e.key===','){
-      e.preventDefault();
-      const first=ac.querySelector('div');
-      const val=first&&ac.style.display!=='none'?first.textContent:inp.value.trim();
-      if(val){addTag(val);inp.value='';ac.style.display='none';}
-    }
-    if(e.key==='Escape'){ac.style.display='none';}
-    if(e.key==='ArrowDown'&&ac.style.display!=='none'){
-      e.preventDefault();
-      const items=ac.querySelectorAll('div');
-      if(items.length)items[0].focus();
-    }
+    if(e.key==='Enter'||e.key===','){e.preventDefault();const first=ac.querySelector('div');const val=first&&ac.style.display!=='none'?first.textContent:inp.value.trim();if(val){addTag(val);inp.value='';ac.style.display='none';}}
+    if(e.key==='Escape')ac.style.display='none';
+    if(e.key==='ArrowDown'&&ac.style.display!=='none'){e.preventDefault();ac.querySelector('div')?.focus();}
   };
-  inp.onblur=()=>setTimeout(()=>{ac.style.display='none';},150);
-
-  // 자동완성 키보드 탐색
-  ac.addEventListener('keydown',e=>{
-    const items=[...ac.querySelectorAll('div')];
-    const idx=items.indexOf(document.activeElement);
-    if(e.key==='ArrowDown'){e.preventDefault();items[idx+1]?.focus();}
-    else if(e.key==='ArrowUp'){e.preventDefault();if(idx===0)inp.focus();else items[idx-1]?.focus();}
-    else if(e.key==='Enter'){e.preventDefault();document.activeElement.onmousedown({preventDefault:()=>{}});}
-  });
-  ac.querySelectorAll('div').forEach(item=>item.setAttribute('tabindex','0'));
-
-  wrap2.appendChild(inp);
-  wrap2.appendChild(ac);
-  w.appendChild(wrap2);
+  inp.onblur=()=>setTimeout(()=>ac.style.display='none',150);
+  wrap2.appendChild(inp);wrap2.appendChild(ac);w.appendChild(wrap2);
 }
 
-function addTag(t){
-  t=t.trim();if(!t)return;
-  const n=notes.find(x=>x.id===cur);if(!n)return;
-  if(!(n.tags||[]).includes(t)){n.tags=[...(n.tags||[]),t];saveL();}
-  renderFTags(n.tags);renderTags();renderList();
-}
-function rmTag(t){
-  const n=notes.find(x=>x.id===cur);if(!n)return;
-  n.tags=(n.tags||[]).filter(x=>x!==t);saveL();
-  renderFTags(n.tags);renderTags();renderList();
-}
-function updCur(){
-  const n=notes.find(x=>x.id===cur);if(!n)return;
-  n.body=document.getElementById('md-ed').value;
-  n.title=document.getElementById('title-in').value;
-  n.folder=document.getElementById('folder-sel').value;
-  saveL();renderList();if(!editMode)renderPrev();
-}
+function addTag(t){t=t.trim();if(!t)return;const n=notes.find(x=>x.id===cur);if(!n)return;if(!(n.tags||[]).includes(t)){n.tags=[...(n.tags||[]),t];saveL();}renderFTags(n.tags);renderTags();renderList();}
+function rmTag(t){const n=notes.find(x=>x.id===cur);if(!n)return;n.tags=(n.tags||[]).filter(x=>x!==t);saveL();renderFTags(n.tags);renderTags();renderList();}
+function updCur(){const n=notes.find(x=>x.id===cur);if(!n)return;n.body=document.getElementById('md-ed').value;n.title=document.getElementById('title-in').value;n.folder=document.getElementById('folder-sel').value;saveL();renderList();if(!editMode)renderPrev();}
 document.getElementById('md-ed').oninput=updCur;
 document.getElementById('title-in').oninput=updCur;
 document.getElementById('folder-sel').onchange=updCur;
@@ -654,8 +817,17 @@ function parseMd(raw){
     codes[k]=`<div class="cb-wrap"><pre><code id="${id}">${safe}</code></pre><button class="copy-btn" onclick="cpCode('${id}')">복사</button></div>`;
     return k;
   });
+  // 이미지 먼저 처리
+  const imgs={};
+  md=md.replace(/!\[([^\]]*)\]\((https?:\/\/[^)]+)\)/g,(m,alt,src)=>{
+    const k='__IMG'+(Object.keys(imgs).length)+'__';
+    imgs[k]=`<img src="${src}" alt="${alt}" style="max-width:100%;border-radius:6px;margin:4px 0;display:block;"/>`;
+    return k;
+  });
   md=md.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   md=md.replace(/^#{3} (.+)$/gm,'<h3>$1</h3>').replace(/^#{2} (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>').replace(/^---$/gm,'<hr>').replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/`([^`\n]+)`/g,'<code>$1</code>');
+  // 링크
+  md=md.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,'<a href="$2" target="_blank" style="color:var(--accent);">$1</a>');
   md=md.replace(/((?:^\|.+\|\n?)+)/gm,block=>{
     const rows=block.trim().split('\n');let html='<table>';let hd=true;
     rows.forEach(row=>{if(/^\|[\s\-:|]+\|$/.test(row.trim()))return;const cells=row.split('|').slice(1,-1).map(c=>c.trim());const tag=hd?'th':'td';html+='<tr>'+cells.map(c=>`<${tag}>${c}</${tag}>`).join('')+'</tr>';hd=false;});
@@ -667,6 +839,7 @@ function parseMd(raw){
   md=md.replace(/\n{2,}/g,'</p><p>').replace(/\n/g,'<br>');
   md='<p>'+md+'</p>';md=md.replace(/<p>\s*<\/p>/g,'');
   Object.entries(codes).forEach(([k,v])=>{md=md.split(k).join(v);});
+  Object.entries(imgs).forEach(([k,v])=>{md=md.split(k).join(v);});
   return md;
 }
 
@@ -688,6 +861,7 @@ document.getElementById('toolbar').onclick=e=>{
   else if(a==='h1')ins('# ');else if(a==='h2')ins('## ');else if(a==='h3')ins('### ');
   else if(a==='ul')ins('- ');else if(a==='task')ins('- [ ] ');else if(a==='quote')ins('> ');
   else if(a==='codeblock')ins('```\n\n```');else if(a==='hr')ins('\n---\n');
+  else if(a==='attach')document.getElementById('attach-file').click();
   else if(a==='table'){const r=prompt('행 수:',3);const c=prompt('열 수:',3);if(r&&c){const h='| '+Array(+c).fill('제목').join(' | ')+' |',sp='| '+Array(+c).fill('---').join(' | ')+' |',bd=Array(+r).fill('| '+Array(+c).fill('내용').join(' | ')+' |').join('\n');ins('\n'+h+'\n'+sp+'\n'+bd+'\n');}}
 };
 
@@ -707,10 +881,7 @@ document.getElementById('del-btn').onclick=()=>{
   const n=notes.find(x=>x.id===cur);
   trash.push(n);notes=notes.filter(x=>x.id!==cur);cur=null;
   saveL();localStorage.setItem(TRASHK,JSON.stringify(trash));
-  renderAll();
-  document.getElementById('title-in').value='';
-  document.getElementById('md-ed').value='';
-  renderFTags([]);
+  renderAll();document.getElementById('title-in').value='';document.getElementById('md-ed').value='';renderFTags([]);
   toast('휴지통으로 이동했습니다.');
 };
 
