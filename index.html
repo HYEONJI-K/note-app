@@ -126,8 +126,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .btn-cancel{background:transparent;border:1px solid var(--border)!important;color:var(--text2);}
 .btn-ok{background:var(--accent);color:#fff;}
 .btn-danger{background:var(--danger);color:#fff;}
-
-/* 파일 관련 */
 .file-item{display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);margin-bottom:6px;}
 .file-item-icon{font-size:20px;flex-shrink:0;}
 .file-item-info{flex:1;min-width:0;}
@@ -140,6 +138,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .file-upload-zone:hover,.file-upload-zone.drag{border-color:var(--accent);color:var(--accent);}
 .repo-setting{display:flex;flex-direction:column;gap:6px;padding:10px;background:var(--surface2);border-radius:8px;font-size:12px;}
 .repo-setting input{font-size:12px;}
+
+/* 업로드 진행률 */
+#upload-progress-wrap{display:none;position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;min-width:260px;max-width:90vw;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:500;}
+#upload-progress-wrap.show{display:block;}
+#upload-progress-title{font-size:12px;color:var(--text2);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#upload-progress-bar-wrap{background:var(--surface2);border-radius:20px;height:8px;overflow:hidden;margin-bottom:6px;}
+#upload-progress-bar{height:100%;background:var(--accent);border-radius:20px;width:0%;transition:width .2s;}
+#upload-progress-pct{font-size:13px;font-weight:500;color:var(--accent);text-align:right;}
+
 #toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);border-radius:7px;padding:7px 14px;font-size:13px;pointer-events:none;opacity:0;transition:opacity .3s;z-index:400;white-space:nowrap;}
 </style>
 </head>
@@ -238,6 +245,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
   </div>
 </div>
 
+<!-- 업로드 진행률 -->
+<div id="upload-progress-wrap">
+  <div id="upload-progress-title">업로드 중...</div>
+  <div id="upload-progress-bar-wrap">
+    <div id="upload-progress-bar"></div>
+  </div>
+  <div id="upload-progress-pct">0%</div>
+</div>
+
 <!-- 새 폴더 모달 -->
 <div id="folder-modal" class="modal">
   <div class="modal-box">
@@ -285,7 +301,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
     <h2>📎 파일 관리</h2>
     <div id="file-upload-zone" class="file-upload-zone">
       📁 클릭하거나 파일을 드래그하세요<br>
-      <span style="font-size:11px;margin-top:4px;display:block;">이미지, 문서, PDF 등 모든 파일</span>
+      <span style="font-size:11px;margin-top:4px;display:block;">최대 25MB · 이미지, PDF, 문서 등</span>
     </div>
     <input type="file" id="file-upload-input" style="display:none" multiple/>
     <div id="file-list" style="max-height:300px;overflow-y:auto;"></div>
@@ -315,11 +331,7 @@ let token='',gistId='',notes=[],folders=[],trash=[],cur=null,afolder='all',atag=
 let repoOwner='',repoName='';
 
 // ── 테마 ──────────────────────────────────────────
-function applyTheme(t){
-  document.body.className=t;
-  localStorage.setItem('s-theme',t);
-  document.querySelectorAll('.tbtn').forEach(x=>x.classList.toggle('on',x.dataset.t===t));
-}
+function applyTheme(t){document.body.className=t;localStorage.setItem('s-theme',t);document.querySelectorAll('.tbtn').forEach(x=>x.classList.toggle('on',x.dataset.t===t));}
 document.querySelectorAll('.tbtn').forEach(b=>b.onclick=()=>applyTheme(b.dataset.t));
 
 // ── 초기화 ────────────────────────────────────────
@@ -332,7 +344,7 @@ window.onload=()=>{
   const repo=JSON.parse(localStorage.getItem(RK)||'{}');
   repoOwner=repo.owner||'';repoName=repo.name||'';
   applySettings();
-  if(token) boot();
+  if(token)boot();
 };
 
 function applySettings(){
@@ -361,7 +373,6 @@ document.getElementById('token-btn').onclick=async()=>{
     if(!res.ok)throw 0;
     const u=await res.json();
     setAvatar(u.avatar_url);
-    // repo owner 자동 설정
     if(!repoOwner){repoOwner=u.login;document.getElementById('repo-owner-in').value=repoOwner;}
     token=val;localStorage.setItem(TK,token);
     document.getElementById('token-err').style.display='none';
@@ -399,15 +410,8 @@ async function loadGist(){
     const r=await fetch(`https://api.github.com/gists/${gistId}`,{headers:{Authorization:`token ${token}`}});
     if(r.status===404){gistId='';localStorage.removeItem(GK);setSS('⚠ Gist 없음');renderAll();return;}
     const d=await r.json();const c=d.files['notes.json']?.content;
-    if(c){
-      const p=JSON.parse(c);
-      notes=Array.isArray(p)?p:(p.notes||[]);
-      if(p.folders&&Array.isArray(p.folders))folders=p.folders;
-      localStorage.setItem(LK,JSON.stringify(notes));
-      localStorage.setItem(FK,JSON.stringify(folders));
-    }
-    setSS('✓ 동기화됨');renderFolders();renderAll();
-    if(notes.length)selNote(notes[0].id);
+    if(c){const p=JSON.parse(c);notes=Array.isArray(p)?p:(p.notes||[]);if(p.folders&&Array.isArray(p.folders))folders=p.folders;localStorage.setItem(LK,JSON.stringify(notes));localStorage.setItem(FK,JSON.stringify(folders));}
+    setSS('✓ 동기화됨');renderFolders();renderAll();if(notes.length)selNote(notes[0].id);
   }catch{setSS('⚠ 오프라인');renderAll();if(notes.length)selNote(notes[0].id);}
 }
 
@@ -415,16 +419,10 @@ async function saveGist(){
   setSS('저장 중...');
   const content=JSON.stringify({version:2,saved:new Date().toISOString(),notes,folders},null,2);
   try{
-    if(gistId){
-      await fetch(`https://api.github.com/gists/${gistId}`,{method:'PATCH',headers:{Authorization:`token ${token}`,'Content-Type':'application/json'},body:JSON.stringify({files:{'notes.json':{content}}})});
-    }else{
-      const r=await fetch('https://api.github.com/gists',{method:'POST',headers:{Authorization:`token ${token}`,'Content-Type':'application/json'},body:JSON.stringify({description:'Notes App Backup',public:false,files:{'notes.json':{content}}})});
-      const d=await r.json();gistId=d.id;localStorage.setItem(GK,gistId);
-    }
-    localStorage.setItem(LK,JSON.stringify(notes));
-    localStorage.setItem(FK,JSON.stringify(folders));
-    setSS('✓ 동기화됨 · '+new Date().toLocaleTimeString());
-    toast('☁ 저장 완료');
+    if(gistId){await fetch(`https://api.github.com/gists/${gistId}`,{method:'PATCH',headers:{Authorization:`token ${token}`,'Content-Type':'application/json'},body:JSON.stringify({files:{'notes.json':{content}}})});}
+    else{const r=await fetch('https://api.github.com/gists',{method:'POST',headers:{Authorization:`token ${token}`,'Content-Type':'application/json'},body:JSON.stringify({description:'Notes App Backup',public:false,files:{'notes.json':{content}}})});const d=await r.json();gistId=d.id;localStorage.setItem(GK,gistId);}
+    localStorage.setItem(LK,JSON.stringify(notes));localStorage.setItem(FK,JSON.stringify(folders));
+    setSS('✓ 동기화됨 · '+new Date().toLocaleTimeString());toast('☁ 저장 완료');
   }catch{setSS('⚠ 저장 실패');toast('저장 실패');}
 }
 
@@ -440,18 +438,8 @@ function setSS(s){document.getElementById('sync-status').textContent=s;}
 
 // ── 설정 ──────────────────────────────────────────
 document.getElementById('settings-btn').onclick=()=>openModal('settings-modal');
-document.getElementById('font-sel').onchange=e=>{
-  document.getElementById('md-ed').style.fontFamily=e.target.value;
-  document.getElementById('preview').style.fontFamily=e.target.value;
-  localStorage.setItem('s-font',e.target.value);
-};
-document.getElementById('font-size-range').oninput=e=>{
-  const v=e.target.value;
-  document.getElementById('md-ed').style.fontSize=v+'px';
-  document.getElementById('preview').style.fontSize=v+'px';
-  document.getElementById('fs-val').textContent=v;
-  localStorage.setItem('s-fs',v);
-};
+document.getElementById('font-sel').onchange=e=>{document.getElementById('md-ed').style.fontFamily=e.target.value;document.getElementById('preview').style.fontFamily=e.target.value;localStorage.setItem('s-font',e.target.value);};
+document.getElementById('font-size-range').oninput=e=>{const v=e.target.value;document.getElementById('md-ed').style.fontSize=v+'px';document.getElementById('preview').style.fontSize=v+'px';document.getElementById('fs-val').textContent=v;localStorage.setItem('s-fs',v);};
 document.getElementById('save-repo-btn').onclick=()=>{
   const o=document.getElementById('repo-owner-in').value.trim();
   const n=document.getElementById('repo-name-in').value.trim();
@@ -465,7 +453,22 @@ document.getElementById('save-repo-btn').onclick=()=>{
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 
-// ── 파일 업로드 (GitHub Repo API) ─────────────────
+// ── 업로드 진행률 UI ──────────────────────────────
+function showProgress(name,pct){
+  const wrap=document.getElementById('upload-progress-wrap');
+  wrap.classList.add('show');
+  document.getElementById('upload-progress-title').textContent=`업로드 중: ${name}`;
+  document.getElementById('upload-progress-bar').style.width=pct+'%';
+  document.getElementById('upload-progress-pct').textContent=Math.round(pct)+'%';
+}
+function hideProgress(){
+  const wrap=document.getElementById('upload-progress-wrap');
+  document.getElementById('upload-progress-bar').style.width='100%';
+  document.getElementById('upload-progress-pct').textContent='100%';
+  setTimeout(()=>{wrap.classList.remove('show');document.getElementById('upload-progress-bar').style.width='0%';},800);
+}
+
+// ── 파일 업로드 (진행률 포함) ─────────────────────
 function fileIcon(name){
   const ext=name.split('.').pop().toLowerCase();
   if(['jpg','jpeg','png','gif','webp','svg'].includes(ext))return '🖼';
@@ -475,47 +478,63 @@ function fileIcon(name){
   if(['mp3','wav','m4a'].includes(ext))return '🎵';
   if(['doc','docx'].includes(ext))return '📝';
   if(['xls','xlsx'].includes(ext))return '📊';
-  if(['ppt','pptx'].includes(ext))return '📊';
   return '📎';
 }
-
 function fmtSize(bytes){
   if(bytes<1024)return bytes+'B';
   if(bytes<1024*1024)return (bytes/1024).toFixed(1)+'KB';
   return (bytes/1024/1024).toFixed(1)+'MB';
 }
+function isImg(name){return['jpg','jpeg','png','gif','webp','svg'].includes(name.split('.').pop().toLowerCase());}
 
-async function uploadFileToRepo(file){
-  if(!repoOwner||!repoName){
-    toast('설정(⚙)에서 파일 저장소를 먼저 설정하세요.');
-    openModal('settings-modal');return null;
-  }
-  const reader=new FileReader();
+function uploadFileToRepo(file){
   return new Promise(resolve=>{
-    reader.onload=async ev=>{
+    if(!repoOwner||!repoName){toast('설정(⚙)에서 파일 저장소를 먼저 설정하세요.');openModal('settings-modal');resolve(null);return;}
+    if(file.size>25*1024*1024){toast(`${file.name}: 25MB 초과 파일은 업로드할 수 없어요.`);resolve(null);return;}
+
+    // 1단계: FileReader로 base64 변환 (0~40%)
+    showProgress(file.name,0);
+    const reader=new FileReader();
+    reader.onprogress=e=>{if(e.lengthComputable)showProgress(file.name,(e.loaded/e.total)*40);};
+    reader.onload=ev=>{
       const base64=ev.target.result.split(',')[1];
       const path=`files/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9가-힣._-]/g,'_')}`;
-      try{
-        const r=await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`,{
-          method:'PUT',
-          headers:{Authorization:`token ${token}`,'Content-Type':'application/json'},
-          body:JSON.stringify({message:`Upload ${file.name}`,content:base64})
-        });
-        if(!r.ok){
-          const err=await r.json();
-          if(err.message&&err.message.includes('Not Found')){
-            toast('저장소를 찾을 수 없어요. 설정에서 저장소 이름을 확인하세요.');
-          }else if(err.message&&err.message.includes('Bad credentials')){
-            toast('토큰에 repo 권한이 없어요. 새 토큰을 발급해 주세요.');
-          }else{
-            toast('업로드 실패: '+err.message);
-          }
-          resolve(null);return;
+      const body=JSON.stringify({message:`Upload ${file.name}`,content:base64});
+
+      // 2단계: XHR로 업로드 (40~100%)
+      showProgress(file.name,40);
+      const xhr=new XMLHttpRequest();
+      xhr.open('PUT',`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`);
+      xhr.setRequestHeader('Authorization',`token ${token}`);
+      xhr.setRequestHeader('Content-Type','application/json');
+
+      xhr.upload.onprogress=e=>{
+        if(e.lengthComputable){
+          const xhrPct=40+(e.loaded/e.total)*60;
+          showProgress(file.name,xhrPct);
         }
-        const d=await r.json();
-        resolve({name:file.name,path,url:d.content.download_url,size:file.size,sha:d.content.sha,type:file.type});
-      }catch{toast('업로드 중 오류가 발생했습니다.');resolve(null);}
+      };
+
+      xhr.onload=()=>{
+        if(xhr.status>=200&&xhr.status<300){
+          const d=JSON.parse(xhr.responseText);
+          hideProgress();
+          resolve({name:file.name,path,url:d.content.download_url,size:file.size,sha:d.content.sha});
+        }else{
+          hideProgress();
+          try{
+            const err=JSON.parse(xhr.responseText);
+            if(err.message&&err.message.includes('Not Found'))toast('저장소를 찾을 수 없어요. 설정을 확인하세요.');
+            else if(err.message&&err.message.includes('Bad credentials'))toast('토큰에 repo 권한이 없어요.');
+            else toast('업로드 실패: '+err.message);
+          }catch{toast('업로드 중 오류가 발생했습니다.');}
+          resolve(null);
+        }
+      };
+      xhr.onerror=()=>{hideProgress();toast('네트워크 오류가 발생했습니다.');resolve(null);};
+      xhr.send(body);
     };
+    reader.onerror=()=>{hideProgress();toast('파일 읽기 오류');resolve(null);};
     reader.readAsDataURL(file);
   });
 }
@@ -523,9 +542,7 @@ async function uploadFileToRepo(file){
 async function listRepoFiles(){
   if(!repoOwner||!repoName)return[];
   try{
-    const r=await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/files`,{
-      headers:{Authorization:`token ${token}`}
-    });
+    const r=await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/files`,{headers:{Authorization:`token ${token}`}});
     if(r.status===404)return[];
     if(!r.ok)return[];
     return await r.json();
@@ -534,35 +551,23 @@ async function listRepoFiles(){
 
 async function deleteRepoFile(path,sha){
   await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`,{
-    method:'DELETE',
-    headers:{Authorization:`token ${token}`,'Content-Type':'application/json'},
+    method:'DELETE',headers:{Authorization:`token ${token}`,'Content-Type':'application/json'},
     body:JSON.stringify({message:`Delete ${path}`,sha})
   });
 }
 
-// ── 파일 관리 모달 ──────────────────────────────
-document.getElementById('file-mgr-btn').onclick=async()=>{
-  openModal('file-modal');
-  await refreshFileList();
-};
+// ── 파일 관리 모달 ────────────────────────────────
+document.getElementById('file-mgr-btn').onclick=async()=>{openModal('file-modal');await refreshFileList();};
 
 async function refreshFileList(){
   const listEl=document.getElementById('file-list');
   listEl.innerHTML='<div style="padding:10px;text-align:center;color:var(--text2);font-size:12px;">불러오는 중...</div>';
-  if(!repoOwner||!repoName){
-    listEl.innerHTML='<div style="padding:10px;text-align:center;color:var(--text2);font-size:12px;">⚙ 설정에서 파일 저장소를 먼저 설정하세요.</div>';
-    return;
-  }
+  if(!repoOwner||!repoName){listEl.innerHTML='<div style="padding:10px;text-align:center;color:var(--text2);font-size:12px;">⚙ 설정에서 파일 저장소를 먼저 설정하세요.</div>';return;}
   const files=await listRepoFiles();
   listEl.innerHTML='';
-  if(!files.length){
-    listEl.innerHTML='<div style="padding:10px;text-align:center;color:var(--text2);font-size:12px;">업로드된 파일이 없습니다.</div>';
-    return;
-  }
+  if(!files.length){listEl.innerHTML='<div style="padding:10px;text-align:center;color:var(--text2);font-size:12px;">업로드된 파일이 없습니다.</div>';return;}
   files.forEach(f=>{
-    const isImg=['jpg','jpeg','png','gif','webp','svg'].includes(f.name.split('.').pop().toLowerCase());
-    const d=document.createElement('div');
-    d.className='file-item';
+    const d=document.createElement('div');d.className='file-item';
     d.innerHTML=`
       <div class="file-item-icon">${fileIcon(f.name)}</div>
       <div class="file-item-info">
@@ -570,7 +575,7 @@ async function refreshFileList(){
         <div class="file-item-size">${fmtSize(f.size||0)}</div>
       </div>
       <div class="file-item-btns">
-        ${isImg?`<button onclick="insertImgToNote('${f.download_url}','${f.name}')">삽입</button>`:''}
+        ${isImg(f.name)?`<button onclick="insertImgToNote('${f.download_url}','${f.name}')">삽입</button>`:''}
         <button onclick="insertLinkToNote('${f.download_url}','${f.name}')">링크</button>
         <button onclick="window.open('${f.download_url}','_blank')">다운</button>
         <button onclick="confirmDeleteFile('${f.path}','${f.sha}')" style="color:var(--danger);">삭제</button>
@@ -579,62 +584,33 @@ async function refreshFileList(){
   });
 }
 
-window.insertImgToNote=function(url,name){
-  ins(`\n![${name}](${url})\n`);
-  closeModal('file-modal');
-  toast('이미지를 노트에 삽입했습니다.');
-};
-window.insertLinkToNote=function(url,name){
-  ins(`[${name}](${url})`);
-  closeModal('file-modal');
-  toast('링크를 노트에 삽입했습니다.');
-};
+window.insertImgToNote=function(url,name){ins(`\n![${name}](${url})\n`);closeModal('file-modal');toast('이미지를 삽입했습니다.');};
+window.insertLinkToNote=function(url,name){ins(`[${name}](${url})`);closeModal('file-modal');toast('링크를 삽입했습니다.');};
 window.confirmDeleteFile=async function(path,sha){
   if(!confirm('파일을 삭제할까요?'))return;
-  await deleteRepoFile(path,sha);
-  toast('삭제됐습니다.');
-  await refreshFileList();
+  await deleteRepoFile(path,sha);toast('삭제됐습니다.');await refreshFileList();
 };
 
-// 파일 업로드 존
 const uploadZone=document.getElementById('file-upload-zone');
 const uploadInput=document.getElementById('file-upload-input');
 uploadZone.onclick=()=>uploadInput.click();
 uploadZone.ondragover=e=>{e.preventDefault();uploadZone.classList.add('drag');};
 uploadZone.ondragleave=()=>uploadZone.classList.remove('drag');
-uploadZone.ondrop=async e=>{
-  e.preventDefault();uploadZone.classList.remove('drag');
-  await handleFileUpload([...e.dataTransfer.files]);
-};
-uploadInput.onchange=async e=>{
-  await handleFileUpload([...e.target.files]);
-  e.target.value='';
-};
+uploadZone.ondrop=async e=>{e.preventDefault();uploadZone.classList.remove('drag');await handleFileUpload([...e.dataTransfer.files]);};
+uploadInput.onchange=async e=>{await handleFileUpload([...e.target.files]);e.target.value='';};
 
 async function handleFileUpload(files){
   if(!files.length)return;
-  uploadZone.textContent='업로드 중...';
   let ok=0;
-  for(const f of files){
-    const result=await uploadFileToRepo(f);
-    if(result)ok++;
-  }
-  uploadZone.innerHTML='📁 클릭하거나 파일을 드래그하세요<br><span style="font-size:11px;margin-top:4px;display:block;">이미지, 문서, PDF 등 모든 파일</span>';
+  for(const f of files){const result=await uploadFileToRepo(f);if(result)ok++;}
   if(ok>0){toast(`${ok}개 파일 업로드 완료!`);await refreshFileList();}
 }
 
-// 툴바 첨부 버튼
 document.getElementById('attach-file').onchange=async e=>{
-  const files=[...e.target.files];
-  if(!files.length)return;
-  toast('업로드 중...');
+  const files=[...e.target.files];if(!files.length)return;
   for(const f of files){
     const result=await uploadFileToRepo(f);
-    if(result){
-      const isImg=['jpg','jpeg','png','gif','webp','svg'].includes(f.name.split('.').pop().toLowerCase());
-      if(isImg)ins(`\n![${f.name}](${result.url})\n`);
-      else ins(`[${f.name}](${result.url})`);
-    }
+    if(result){if(isImg(f.name))ins(`\n![${f.name}](${result.url})\n`);else ins(`[${f.name}](${result.url})`);}
   }
   e.target.value='';
   toast('첨부 완료!');
@@ -659,11 +635,9 @@ function renderFolders(){
     });
   };
   renderList(folders,0);
-  const sel=document.getElementById('folder-sel');
-  sel.innerHTML='<option value="all">미지정</option>';
+  const sel=document.getElementById('folder-sel');sel.innerHTML='<option value="all">미지정</option>';
   flatFolders(folders).forEach(f=>{const o=document.createElement('option');o.value=f.id;o.textContent='　'.repeat(f.depth)+'📁 '+f.name;sel.appendChild(o);});
-  const psel=document.getElementById('parent-sel');
-  psel.innerHTML='<option value="root">루트 (최상위)</option>';
+  const psel=document.getElementById('parent-sel');psel.innerHTML='<option value="root">루트 (최상위)</option>';
   flatFolders(folders).forEach(f=>{const o=document.createElement('option');o.value=f.id;o.textContent='　'.repeat(f.depth)+'📁 '+f.name;psel.appendChild(o);});
 }
 
@@ -675,9 +649,7 @@ document.getElementById('folder-ok-btn').onclick=()=>{
   const newF={id:'f'+Date.now(),name,children:[]};
   if(parentId==='root'){folders.push(newF);}
   else{const parent=findFolder(folders,parentId);if(parent){if(!parent.children)parent.children=[];parent.children.push(newF);}else folders.push(newF);}
-  saveF();renderFolders();
-  document.getElementById('folder-name-in').value='';
-  closeModal('folder-modal');toast('폴더가 생성됐어요!');
+  saveF();renderFolders();document.getElementById('folder-name-in').value='';closeModal('folder-modal');toast('폴더가 생성됐어요!');
 };
 function findFolder(list,id){for(const f of(list||[])){if(f.id===id)return f;const r=findFolder(f.children,id);if(r)return r;}return null;}
 window.delFolder=function(id){
@@ -691,27 +663,18 @@ document.getElementById('trash-btn').onclick=()=>{
   const el=document.getElementById('trash-list');
   el.innerHTML=trash.length?'':'<p style="padding:10px;color:var(--text2);text-align:center;">비어있습니다.</p>';
   trash.forEach((n,i)=>{
-    const d=document.createElement('div');
-    d.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:8px 4px;border-bottom:1px solid var(--border);font-size:13px;';
+    const d=document.createElement('div');d.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:8px 4px;border-bottom:1px solid var(--border);font-size:13px;';
     d.innerHTML=`<span>${n.title||'제목 없음'}</span><button style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:12px;" onclick="restoreNote(${i})">복원</button>`;
     el.appendChild(d);
   });
   openModal('trash-modal');
 };
-document.getElementById('trash-empty-btn').onclick=()=>{
-  if(!confirm('휴지통을 비울까요?'))return;
-  trash=[];localStorage.setItem(TRASHK,'[]');
-  closeModal('trash-modal');toast('휴지통을 비웠습니다.');
-};
-window.restoreNote=function(i){
-  notes.unshift(trash[i]);trash.splice(i,1);
-  saveL();localStorage.setItem(TRASHK,JSON.stringify(trash));
-  closeModal('trash-modal');renderAll();toast('복원했습니다.');
-};
+document.getElementById('trash-empty-btn').onclick=()=>{if(!confirm('휴지통을 비울까요?'))return;trash=[];localStorage.setItem(TRASHK,'[]');closeModal('trash-modal');toast('휴지통을 비웠습니다.');};
+window.restoreNote=function(i){notes.unshift(trash[i]);trash.splice(i,1);saveL();localStorage.setItem(TRASHK,JSON.stringify(trash));closeModal('trash-modal');renderAll();toast('복원했습니다.');};
 
 // ── 노트 ──────────────────────────────────────────
 function genId(){return 'n'+Date.now()+Math.random().toString(36).slice(2);}
-function defNotes(){return [{id:'demo1',title:'환영합니다! 📝',body:'# Notes 앱\n\n**GitHub Gist**에 노트를, **GitHub 저장소**에 파일을 저장합니다.\n\n- [x] 마크다운 지원\n- [x] 기기 간 동기화\n- [x] 폴더 & 태그\n- [x] 다크모드\n- [x] 파일 업로드/다운로드\n- [ ] 나만의 노트 작성\n\n## 파일 첨부 방법\n\n1. 툴바의 📎 버튼으로 직접 첨부\n2. 상단 📎 버튼으로 파일 관리\n3. 설정(⚙)에서 저장소 먼저 설정 필요',folder:'all',tags:['가이드'],created:Date.now(),favorite:false}];}
+function defNotes(){return [{id:'demo1',title:'환영합니다! 📝',body:'# Notes 앱\n\n**GitHub Gist**에 노트를, **GitHub 저장소**에 파일을 저장합니다.\n\n- [x] 마크다운 지원\n- [x] 기기 간 동기화\n- [x] 파일 업로드 진행률 표시\n- [x] 최대 25MB 파일 지원\n- [ ] 나만의 노트 작성',folder:'all',tags:['가이드'],created:Date.now(),favorite:false}];}
 function saveL(){localStorage.setItem(LK,JSON.stringify(notes));}
 
 function filtered(){
@@ -742,11 +705,7 @@ function renderList(){
 
 function renderTags(){
   const a=document.getElementById('tag-area');const tags=allTags();a.innerHTML='';
-  tags.forEach(t=>{
-    const p=document.createElement('span');p.className='tag-pill'+(atag===t?' on':'');p.textContent=t;
-    p.onclick=()=>{atag=atag===t?null:t;renderAll();};
-    a.appendChild(p);
-  });
+  tags.forEach(t=>{const p=document.createElement('span');p.className='tag-pill'+(atag===t?' on':'');p.textContent=t;p.onclick=()=>{atag=atag===t?null:t;renderAll();};a.appendChild(p);});
 }
 
 function selNote(id){
@@ -760,33 +719,17 @@ function selNote(id){
 
 function renderFTags(tags){
   const w=document.getElementById('tag-wrap');w.innerHTML='';
-  tags.forEach(t=>{
-    const s=document.createElement('span');s.className='ftag';
-    s.innerHTML=`${t}<button>×</button>`;
-    s.querySelector('button').onclick=()=>rmTag(t);
-    w.appendChild(s);
-  });
-  const wrap2=document.createElement('div');
-  wrap2.style.cssText='position:relative;display:inline-flex;';
-  const inp=document.createElement('input');
-  inp.id='tag-in';inp.placeholder='태그 추가...';
-  inp.style.cssText='border:none;background:transparent;color:var(--text2);font-size:12px;outline:none;width:80px;';
-  const ac=document.createElement('div');
-  ac.style.cssText='position:absolute;bottom:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:6px;font-size:12px;z-index:50;max-height:150px;overflow-y:auto;display:none;box-shadow:0 -4px 12px rgba(0,0,0,0.15);min-width:120px;';
+  tags.forEach(t=>{const s=document.createElement('span');s.className='ftag';s.innerHTML=`${t}<button>×</button>`;s.querySelector('button').onclick=()=>rmTag(t);w.appendChild(s);});
+  const wrap2=document.createElement('div');wrap2.style.cssText='position:relative;display:inline-flex;';
+  const inp=document.createElement('input');inp.id='tag-in';inp.placeholder='태그 추가...';inp.style.cssText='border:none;background:transparent;color:var(--text2);font-size:12px;outline:none;width:80px;';
+  const ac=document.createElement('div');ac.style.cssText='position:absolute;bottom:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:6px;font-size:12px;z-index:50;max-height:150px;overflow-y:auto;display:none;box-shadow:0 -4px 12px rgba(0,0,0,0.15);min-width:120px;';
   inp.oninput=()=>{
     const q=inp.value.trim().toLowerCase();ac.innerHTML='';
     if(!q){ac.style.display='none';return;}
     const curTags=(notes.find(x=>x.id===cur)?.tags||[]);
     const matches=allTags().filter(t=>t.toLowerCase().includes(q)&&!curTags.includes(t));
     if(!matches.length){ac.style.display='none';return;}
-    matches.forEach(t=>{
-      const item=document.createElement('div');item.textContent=t;
-      item.style.cssText='padding:6px 10px;cursor:pointer;white-space:nowrap;';
-      item.onmousedown=e=>{e.preventDefault();addTag(t);inp.value='';ac.style.display='none';};
-      item.onmouseover=()=>item.style.background='var(--surface2)';
-      item.onmouseout=()=>item.style.background='';
-      ac.appendChild(item);
-    });
+    matches.forEach(t=>{const item=document.createElement('div');item.textContent=t;item.style.cssText='padding:6px 10px;cursor:pointer;white-space:nowrap;';item.onmousedown=e=>{e.preventDefault();addTag(t);inp.value='';ac.style.display='none';};item.onmouseover=()=>item.style.background='var(--surface2)';item.onmouseout=()=>item.style.background='';ac.appendChild(item);});
     ac.style.display='block';
   };
   inp.onkeydown=e=>{
@@ -817,22 +760,12 @@ function parseMd(raw){
     codes[k]=`<div class="cb-wrap"><pre><code id="${id}">${safe}</code></pre><button class="copy-btn" onclick="cpCode('${id}')">복사</button></div>`;
     return k;
   });
-  // 이미지 먼저 처리
   const imgs={};
-  md=md.replace(/!\[([^\]]*)\]\((https?:\/\/[^)]+)\)/g,(m,alt,src)=>{
-    const k='__IMG'+(Object.keys(imgs).length)+'__';
-    imgs[k]=`<img src="${src}" alt="${alt}" style="max-width:100%;border-radius:6px;margin:4px 0;display:block;"/>`;
-    return k;
-  });
+  md=md.replace(/!\[([^\]]*)\]\((https?:\/\/[^)]+)\)/g,(m,alt,src)=>{const k='__IMG'+(Object.keys(imgs).length)+'__';imgs[k]=`<img src="${src}" alt="${alt}" style="max-width:100%;border-radius:6px;margin:4px 0;display:block;"/>`;return k;});
   md=md.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   md=md.replace(/^#{3} (.+)$/gm,'<h3>$1</h3>').replace(/^#{2} (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>').replace(/^---$/gm,'<hr>').replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/`([^`\n]+)`/g,'<code>$1</code>');
-  // 링크
   md=md.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,'<a href="$2" target="_blank" style="color:var(--accent);">$1</a>');
-  md=md.replace(/((?:^\|.+\|\n?)+)/gm,block=>{
-    const rows=block.trim().split('\n');let html='<table>';let hd=true;
-    rows.forEach(row=>{if(/^\|[\s\-:|]+\|$/.test(row.trim()))return;const cells=row.split('|').slice(1,-1).map(c=>c.trim());const tag=hd?'th':'td';html+='<tr>'+cells.map(c=>`<${tag}>${c}</${tag}>`).join('')+'</tr>';hd=false;});
-    return html+'</table>';
-  });
+  md=md.replace(/((?:^\|.+\|\n?)+)/gm,block=>{const rows=block.trim().split('\n');let html='<table>';let hd=true;rows.forEach(row=>{if(/^\|[\s\-:|]+\|$/.test(row.trim()))return;const cells=row.split('|').slice(1,-1).map(c=>c.trim());const tag=hd?'th':'td';html+='<tr>'+cells.map(c=>`<${tag}>${c}</${tag}>`).join('')+'</tr>';hd=false;});return html+'</table>';});
   md=md.replace(/^- \[x\] (.+)$/gm,'<div class="task-row"><input type="checkbox" checked onchange="tgTask(this,\'$1\')"> <span class="done">$1</span></div>');
   md=md.replace(/^- \[ \] (.+)$/gm,'<div class="task-row"><input type="checkbox" onchange="tgTask(this,\'$1\')"> <span>$1</span></div>');
   md=md.replace(/^- (.+)$/gm,'<li>$1</li>').replace(/(<li>.*?<\/li>\n?)+/g,m=>'<ul>'+m+'</ul>');
@@ -872,14 +805,11 @@ document.getElementById('t-prev').onclick=()=>{editMode=false;renderPrev();docum
 // ── 새 노트 / 삭제 ────────────────────────────────
 document.getElementById('new-btn').onclick=()=>{
   const n={id:genId(),title:'',body:'',folder:afolder==='all'||afolder==='fav'?'all':afolder,tags:[],created:Date.now(),favorite:false};
-  notes.unshift(n);saveL();renderAll();selNote(n.id);
-  if(window.innerWidth<=700)closeSB();
-  document.getElementById('title-in').focus();
+  notes.unshift(n);saveL();renderAll();selNote(n.id);if(window.innerWidth<=700)closeSB();document.getElementById('title-in').focus();
 };
 document.getElementById('del-btn').onclick=()=>{
   if(!cur||!confirm('휴지통으로 이동할까요?'))return;
-  const n=notes.find(x=>x.id===cur);
-  trash.push(n);notes=notes.filter(x=>x.id!==cur);cur=null;
+  const n=notes.find(x=>x.id===cur);trash.push(n);notes=notes.filter(x=>x.id!==cur);cur=null;
   saveL();localStorage.setItem(TRASHK,JSON.stringify(trash));
   renderAll();document.getElementById('title-in').value='';document.getElementById('md-ed').value='';renderFTags([]);
   toast('휴지통으로 이동했습니다.');
