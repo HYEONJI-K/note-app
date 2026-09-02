@@ -13,31 +13,29 @@ body.dark{--bg:#1a1a1a;--surface:#2a2a2a;--surface2:#3a3a3a;--surface0:#333;--bo
 html,body{height:100%;overflow:hidden;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;color:var(--text);background:var(--bg);display:flex;flex-direction:column;}
 
-/* ── 로그인 화면 ── */
-#login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:16px;padding:24px;}
+/* 로그인 화면 */
+#login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:16px;padding:24px;overflow-y:auto;}
 #login-screen h1{font-size:24px;font-weight:500;}
-#login-screen p{color:var(--text2);font-size:13px;max-width:340px;text-align:center;line-height:1.6;}
-.login-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:12px;}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px;}
 .login-card h2{font-size:14px;font-weight:500;color:var(--text2);}
-.login-input-row{display:flex;gap:6px;}
-.login-input-row input{flex:1;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px;outline:none;}
-.login-input-row input:focus{border-color:var(--accent);}
-.login-btn{padding:9px 16px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap;}
-.login-btn:hover{opacity:.9;}
-.login-btn.sec{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
-.login-btn.sec:hover{background:var(--surface0);}
-.login-divider{text-align:center;color:var(--text2);font-size:12px;position:relative;}
-.login-divider::before,.login-divider::after{content:'';position:absolute;top:50%;width:40%;height:1px;background:var(--border);}
-.login-divider::before{left:0;}.login-divider::after{right:0;}
-.login-err{color:var(--danger);font-size:12px;display:none;text-align:center;}
-.login-hint{font-size:11px;color:var(--text2);text-align:center;}
-.login-hint a{color:var(--accent);}
-.id-display{background:var(--accent-bg);border:1px solid var(--accent);border-radius:8px;padding:10px 14px;text-align:center;}
-.id-display .id-label{font-size:11px;color:var(--text2);margin-bottom:4px;}
-.id-display .id-value{font-size:20px;font-weight:700;letter-spacing:2px;color:var(--accent);font-family:'Courier New',monospace;}
-.id-display .id-sub{font-size:11px;color:var(--text2);margin-top:4px;}
+.lrow{display:flex;gap:6px;}
+.lrow input{flex:1;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px;outline:none;}
+.lrow input:focus{border-color:var(--accent);}
+.lbtn{padding:9px 14px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap;}
+.lbtn:hover{opacity:.9;}
+.lbtn.sec{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+.lerr{color:var(--danger);font-size:12px;display:none;text-align:center;padding:4px;}
+.ldiv{text-align:center;color:var(--text2);font-size:12px;position:relative;padding:4px 0;}
+.ldiv::before,.ldiv::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:var(--border);}
+.ldiv::before{left:0;}.ldiv::after{right:0;}
+.lhint{font-size:11px;color:var(--text2);text-align:center;}
+.lhint a{color:var(--accent);}
+.id-box{background:var(--accent-bg);border:1px solid var(--accent);border-radius:10px;padding:12px;text-align:center;}
+.id-box .ilab{font-size:11px;color:var(--text2);margin-bottom:4px;}
+.id-box .ival{font-size:22px;font-weight:700;letter-spacing:3px;color:var(--accent);font-family:'Courier New',monospace;}
+.id-box .isub{font-size:11px;color:var(--text2);margin-top:4px;}
 
-/* ── 앱 ── */
+/* 앱 */
 #app{display:none;flex-direction:column;flex:1;min-height:0;}
 #topbar{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
 #menu-btn{display:none;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:transparent;cursor:pointer;font-size:17px;color:var(--text);flex-shrink:0;}
@@ -167,56 +165,53 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 </head>
 <body class="light">
 
-<!-- ── 로그인 화면 ── -->
+<!-- 로그인 화면 -->
 <div id="login-screen">
   <h1>📝 Notes</h1>
 
-  <!-- ID로 로그인 -->
   <div class="login-card">
     <h2>🔑 ID로 로그인</h2>
-    <div class="login-input-row">
-      <input id="id-input" placeholder="10자리 ID 입력" maxlength="12" autocomplete="off" spellcheck="false"/>
-      <button class="login-btn" id="id-login-btn">로그인</button>
+    <div class="lrow">
+      <input id="id-input" placeholder="ID 입력 (예: abc12345)" maxlength="12" autocomplete="off" spellcheck="false"/>
+      <button class="lbtn" id="id-login-btn">로그인</button>
     </div>
-    <div class="login-err" id="id-err">ID를 찾을 수 없습니다.</div>
+    <div class="lerr" id="id-err">ID를 찾을 수 없습니다. 토큰으로 재등록해 주세요.</div>
+    <div class="lhint">로컬 캐시가 없어도 ID만으로 복원됩니다.</div>
   </div>
 
-  <div class="login-divider">또는 처음 사용하는 경우</div>
+  <div class="ldiv">처음 사용하거나 토큰을 변경하는 경우</div>
 
-  <!-- 토큰으로 최초 등록 -->
   <div class="login-card">
     <h2>🔗 GitHub 토큰으로 등록</h2>
-    <div class="login-input-row">
+    <div class="lrow">
       <input id="token-input" type="password" placeholder="ghp_..." autocomplete="off"/>
     </div>
-    <div style="display:flex;gap:6px;">
-      <input id="custom-id-input" placeholder="ID 직접 입력 (선택, 영문+숫자)" maxlength="10" autocomplete="off" spellcheck="false" style="flex:1;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px;outline:none;"/>
-      <button class="login-btn sec" id="gen-id-btn" title="ID 자동 생성">🎲</button>
-      <button class="login-btn" id="token-reg-btn">등록</button>
+    <div class="lrow">
+      <input id="custom-id-input" placeholder="사용할 ID (영문+숫자, 선택)" maxlength="10" autocomplete="off" spellcheck="false"/>
+      <button class="lbtn sec" id="gen-id-btn" title="ID 자동생성">🎲</button>
+      <button class="lbtn" id="token-reg-btn">등록</button>
     </div>
-    <div class="login-err" id="token-err">토큰이 올바르지 않습니다.</div>
-    <div class="login-hint">
-      <a href="https://github.com/settings/tokens/new?scopes=gist,repo&description=notes-app" target="_blank">토큰 발급 바로가기 (gist + repo 권한)</a>
-    </div>
+    <div class="lerr" id="token-err">토큰이 올바르지 않습니다.</div>
+    <div class="lhint"><a href="https://github.com/settings/tokens/new?scopes=gist,repo&description=notes-app" target="_blank">토큰 발급 (gist + repo 권한)</a></div>
   </div>
 </div>
 
-<!-- ── ID 발급 완료 화면 ── -->
-<div id="id-issued-screen" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:16px;padding:24px;">
+<!-- ID 발급 완료 -->
+<div id="issued-screen" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:16px;padding:24px;">
   <h1>📝 Notes</h1>
-  <div class="login-card" style="text-align:center;">
+  <div class="login-card">
     <h2>✅ 등록 완료!</h2>
-    <div class="id-display">
-      <div class="id-label">나의 로그인 ID</div>
-      <div class="id-value" id="issued-id-display">-</div>
-      <div class="id-sub">이 ID로 어느 기기에서나 로그인하세요</div>
+    <div class="id-box">
+      <div class="ilab">나의 로그인 ID</div>
+      <div class="ival" id="issued-id">-</div>
+      <div class="isub">어느 기기에서나 이 ID로 로그인하세요</div>
     </div>
-    <p style="font-size:12px;color:var(--text2);line-height:1.6;">⚠️ ID를 안전한 곳에 메모해두세요.<br>분실 시 토큰으로 재등록하면 기존 ID를 덮어씁니다.</p>
-    <button class="login-btn" id="proceed-btn" style="width:100%;">시작하기 →</button>
+    <p style="font-size:12px;color:var(--text2);line-height:1.6;text-align:center;">⚠️ ID를 반드시 메모해두세요.<br>잊어버린 경우 토큰으로 재등록하면 기존 ID를 덮어씁니다.</p>
+    <button class="lbtn" id="proceed-btn" style="width:100%;">시작하기 →</button>
   </div>
 </div>
 
-<!-- ── 앱 ── -->
+<!-- 앱 -->
 <div id="app">
   <div id="topbar">
     <button id="menu-btn">☰</button>
@@ -340,9 +335,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
     </div>
     <div style="border-top:1px solid var(--border);padding-top:12px;">
       <div class="modal-row" style="margin-bottom:6px;"><span style="font-weight:500;">🔑 내 로그인 ID</span></div>
-      <div class="id-display" style="cursor:pointer;" id="my-id-display" title="클릭하여 복사">
-        <div class="id-label">현재 ID (클릭하여 복사)</div>
-        <div class="id-value" id="my-id-val">-</div>
+      <div class="id-box" style="cursor:pointer;" id="my-id-box" title="클릭하여 복사">
+        <div class="ilab">현재 ID (클릭하면 복사)</div>
+        <div class="ival" id="my-id-val">-</div>
       </div>
     </div>
     <div class="modal-btns">
@@ -380,42 +375,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 </div>
 
 <div id="toast"></div>
-
 <script>
-// ── 상수 ──────────────────────────────────────────
+// ── 키 상수 ───────────────────────────────────────
 const LK='notes_local_v1',FK='notes_folders_v1',TRASHK='notes_trash_v1',RK='notes_repo_v1';
-const SAVED_ID_KEY='notes_saved_id';
-// 토큰 맵을 저장하는 공용 Gist 파일명 (ID → 암호화된 토큰)
-const ID_MAP_FILE='notes_id_map.json';
+// ID 맵 Gist description 접두어: "notes-id-map-{id}" 형식으로 공개 저장
+// 타인이 검색해도 토큰은 난독화되어 있어 바로 사용 불가
 
-let token='',gistId='',myId='',notes=[],folders=[],trash=[],cur=null,afolder='all',atag=null,sq='',editMode=true;
+let token='',gistId='',myId='',idMapGistId='';
+let notes=[],folders=[],trash=[],cur=null,afolder='all',atag=null,sq='',editMode=true;
 let repoOwner='',repoName='';
 
-// ── 난독화 (XOR + base64) ─────────────────────────
-// 완전한 암호화가 아닌 평문 노출 방지용입니다
-function obfuscate(str,key){
-  let res='';
-  for(let i=0;i<str.length;i++) res+=String.fromCharCode(str.charCodeAt(i)^key.charCodeAt(i%key.length));
-  return btoa(unescape(encodeURIComponent(res)));
-}
-function deobfuscate(b64,key){
-  try{
-    const str=decodeURIComponent(escape(atob(b64)));
-    let res='';
-    for(let i=0;i<str.length;i++) res+=String.fromCharCode(str.charCodeAt(i)^key.charCodeAt(i%key.length));
-    return res;
-  }catch{return null;}
-}
-// ID를 키로 사용해 토큰 난독화
-function encToken(token,id){return obfuscate(token,id+'notes2024');}
-function decToken(enc,id){return deobfuscate(enc,id+'notes2024');}
+// ── 난독화 ────────────────────────────────────────
+function xorEnc(str,key){let r='';for(let i=0;i<str.length;i++)r+=String.fromCharCode(str.charCodeAt(i)^key.charCodeAt(i%key.length));return btoa(unescape(encodeURIComponent(r)));}
+function xorDec(b64,key){try{const s=decodeURIComponent(escape(atob(b64)));let r='';for(let i=0;i<s.length;i++)r+=String.fromCharCode(s.charCodeAt(i)^key.charCodeAt(i%key.length));return r;}catch{return null;}}
+function encTok(tok,id){return xorEnc(tok,id+'_nts_2024_key');}
+function decTok(enc,id){return xorDec(enc,id+'_nts_2024_key');}
 
 // ── ID 생성 ───────────────────────────────────────
-function genLoginId(){
-  const chars='abcdefghijklmnopqrstuvwxyz0123456789';
-  let id='';for(let i=0;i<8;i++)id+=chars[Math.floor(Math.random()*chars.length)];
-  return id;
-}
+function makeId(){const c='abcdefghijklmnopqrstuvwxyz0123456789';let s='';for(let i=0;i<8;i++)s+=c[Math.floor(Math.random()*c.length)];return s;}
 
 // ── 테마 ──────────────────────────────────────────
 function applyTheme(t){document.body.className=t;localStorage.setItem('s-theme',t);document.querySelectorAll('.tbtn').forEach(x=>x.classList.toggle('on',x.dataset.t===t));}
@@ -429,225 +406,221 @@ window.onload=()=>{
   const repo=JSON.parse(localStorage.getItem(RK)||'{}');
   repoOwner=repo.owner||'';repoName=repo.name||'';
   applySettings();
-  // 이 기기에 저장된 ID가 있으면 자동 로그인 시도
-  const savedId=localStorage.getItem(SAVED_ID_KEY);
-  const savedToken=localStorage.getItem('notes_gh_token_'+savedId);
-  if(savedId&&savedToken){
-    token=savedToken;myId=savedId;
-    boot();
-  }
+  document.getElementById('custom-id-input').value=makeId();
+  // 자동 로그인: 이 기기에 저장된 정보가 있으면
+  const sid=localStorage.getItem('sid');
+  const stok=sid?localStorage.getItem('stok_'+sid):'';
+  const sgid=sid?localStorage.getItem('sgid'):'';
+  if(sid&&stok){myId=sid;token=stok;gistId=sgid||'';idMapGistId=localStorage.getItem('smgid_'+sid)||'';boot();}
 };
 
 function applySettings(){
-  const theme=localStorage.getItem('s-theme')||'light';
-  applyTheme(theme);
+  const theme=localStorage.getItem('s-theme')||'light';applyTheme(theme);
   const font=localStorage.getItem('s-font')||"'Courier New',monospace";
-  document.getElementById('md-ed').style.fontFamily=font;
-  document.getElementById('font-sel').value=font;
+  document.getElementById('md-ed').style.fontFamily=font;document.getElementById('font-sel').value=font;
   const fs=localStorage.getItem('s-fs')||'13';
-  document.getElementById('md-ed').style.fontSize=fs+'px';
-  document.getElementById('preview').style.fontSize=fs+'px';
-  document.getElementById('font-size-range').value=fs;
-  document.getElementById('fs-val').textContent=fs;
-  document.getElementById('repo-owner-in').value=repoOwner;
-  document.getElementById('repo-name-in').value=repoName;
+  document.getElementById('md-ed').style.fontSize=fs+'px';document.getElementById('preview').style.fontSize=fs+'px';
+  document.getElementById('font-size-range').value=fs;document.getElementById('fs-val').textContent=fs;
+  document.getElementById('repo-owner-in').value=repoOwner;document.getElementById('repo-name-in').value=repoName;
 }
 
-// ── ID 자동 생성 버튼 ─────────────────────────────
-document.getElementById('gen-id-btn').onclick=()=>{
-  document.getElementById('custom-id-input').value=genLoginId();
-};
-// 페이지 로드 시 자동으로 ID 하나 미리 생성
-document.getElementById('custom-id-input').value=genLoginId();
+// ── ID 자동생성 버튼 ──────────────────────────────
+document.getElementById('gen-id-btn').onclick=()=>{document.getElementById('custom-id-input').value=makeId();};
 
-// ── ID 로그인 ─────────────────────────────────────
+// ────────────────────────────────────────────────
+// ID 로그인 흐름
+// 핵심: GitHub 공개 Gist 검색 API로 "notes-id-map-{id}" description을 찾아 토큰 복원
+// ────────────────────────────────────────────────
 document.getElementById('id-login-btn').onclick=async()=>{
-  const id=document.getElementById('id-input').value.trim().toLowerCase();
+  const id=document.getElementById('id-input').value.trim().toLowerCase().replace(/\s/g,'');
   if(!id){toast('ID를 입력하세요.');return;}
   const btn=document.getElementById('id-login-btn');
-  btn.textContent='확인 중...';btn.disabled=true;
+  btn.textContent='검색 중...';btn.disabled=true;
   document.getElementById('id-err').style.display='none';
-
   try{
-    // 공용 Gist에서 ID 맵 조회 (인증 없이 공개 Gist 검색)
-    const result=await fetchIdMap(id);
+    const result=await findIdMapGist(id);
     if(!result){
       document.getElementById('id-err').style.display='block';
       btn.textContent='로그인';btn.disabled=false;return;
     }
-    // 토큰 복원
-    const decrypted=decToken(result.enc,id);
+    const decrypted=decTok(result.enc,id);
     if(!decrypted){
-      document.getElementById('id-err').textContent='ID 인증에 실패했습니다.';
+      document.getElementById('id-err').textContent='복호화에 실패했습니다. ID를 확인하세요.';
       document.getElementById('id-err').style.display='block';
       btn.textContent='로그인';btn.disabled=false;return;
     }
-    token=decrypted;myId=id;
-    gistId=result.gistId||'';
-    // 이 기기에 저장
-    localStorage.setItem(SAVED_ID_KEY,id);
-    localStorage.setItem('notes_gh_token_'+id,token);
-    if(gistId)localStorage.setItem('notes_gist_id',gistId);
+    token=decrypted;myId=id;gistId=result.gistId||'';idMapGistId=result.mapGistId;
+    saveLocalAuth();
     boot();
   }catch(e){
-    document.getElementById('id-err').textContent='오류가 발생했습니다. 다시 시도하세요.';
+    document.getElementById('id-err').textContent='오류: '+e.message;
     document.getElementById('id-err').style.display='block';
     btn.textContent='로그인';btn.disabled=false;
   }
 };
 
-// ── ID 맵 조회 (공개 Gist에서) ────────────────────
-// ID 맵은 "notes-id-map" description의 공개 Gist에 저장
-async function fetchIdMap(id){
-  // 먼저 로컬에 gist id 맵이 있는지
-  const cachedMapGistId=localStorage.getItem('id_map_gist_'+id);
-  if(cachedMapGistId){
-    try{
-      const r=await fetch(`https://api.github.com/gists/${cachedMapGistId}`);
-      if(r.ok){
-        const d=await r.json();
-        const c=d.files[ID_MAP_FILE]?.content;
-        if(c){const map=JSON.parse(c);if(map[id])return map[id];}
-      }
-    }catch{}
+// GitHub Gist 검색 API로 ID 맵 Gist 찾기 (인증 불필요)
+async function findIdMapGist(id){
+  // 방법1: 로컬 캐시에 mapGistId가 있으면 바로 조회
+  const cached=localStorage.getItem('smgid_'+id);
+  if(cached){
+    const data=await fetchMapGistData(cached);
+    if(data&&data[id])return{...data[id],mapGistId:cached};
+  }
+  // 방법2: GitHub Gist 검색 (description 기반)
+  // GitHub Search API는 Gist를 description으로 검색 불가이므로
+  // 고정 파일명 방식: 공개 Gist의 파일명을 "notes-id-map-{id}.json"으로 고정
+  // raw URL 패턴으로 직접 접근 가능
+  // → 등록 시 만든 공개 Gist의 raw URL을 gist.github.com에서 가져옴
+  // 실제로는 Gist API로 사용자 gist 목록을 모르므로
+  // 아래 방식: description이 정확히 "notes-id-map-{id}"인 공개 Gist를
+  // GitHub REST search로 찾음 (gist search는 미지원이므로 대안 사용)
+  // → 가장 신뢰할 수 있는 방법: Gist를 공개로 만들고 파일명에 ID를 포함시켜
+  //   raw.githubusercontent.com URL을 예측 가능하게 만드는 것 → 불가능(hash 포함)
+  // → 최선책: GitHub API /gists/public 에서 description 필터
+  //   (최근 공개 Gist 30개씩 페이지네이션, description 매칭)
+  setSS('ID 검색 중...');
+  // 최대 3페이지(90개) 검색
+  for(let page=1;page<=3;page++){
+    const r=await fetch(`https://api.github.com/gists/public?per_page=30&page=${page}`);
+    if(!r.ok)break;
+    const list=await r.json();
+    if(!list.length)break;
+    const found=list.find(g=>g.description===`notes-id-map-${id}`);
+    if(found){
+      const data=await fetchMapGistData(found.id);
+      if(data&&data[id]){localStorage.setItem('smgid_'+id,found.id);return{...data[id],mapGistId:found.id};}
+    }
   }
   return null;
+}
+
+async function fetchMapGistData(gistId){
+  try{
+    const r=await fetch(`https://api.github.com/gists/${gistId}`);
+    if(!r.ok)return null;
+    const d=await r.json();
+    const files=d.files;
+    const fname=Object.keys(files).find(k=>k.startsWith('notes-id-map'));
+    if(!fname)return null;
+    return JSON.parse(files[fname].content);
+  }catch{return null;}
 }
 
 // ── 토큰 등록 ─────────────────────────────────────
 document.getElementById('token-reg-btn').onclick=async()=>{
   const val=document.getElementById('token-input').value.trim();
-  const customId=document.getElementById('custom-id-input').value.trim().toLowerCase();
+  const cid=document.getElementById('custom-id-input').value.trim().toLowerCase().replace(/[^a-z0-9]/g,'');
   if(!val){toast('토큰을 입력하세요.');return;}
-
-  const id=customId||genLoginId();
+  const id=cid||makeId();
   const btn=document.getElementById('token-reg-btn');
   btn.textContent='등록 중...';btn.disabled=true;
   document.getElementById('token-err').style.display='none';
-
   try{
-    // 토큰 유효성 검사
-    const res=await fetch('https://api.github.com/user',{headers:{Authorization:`token ${val}`}});
-    if(!res.ok)throw new Error('invalid_token');
-    const u=await res.json();
-
+    // 1. 토큰 유효성 확인
+    const ur=await fetch('https://api.github.com/user',{headers:{Authorization:`token ${val}`}});
+    if(!ur.ok)throw new Error('invalid_token');
+    const u=await ur.json();
     token=val;myId=id;
     if(!repoOwner){repoOwner=u.login;document.getElementById('repo-owner-in').value=repoOwner;}
 
-    // 기존 Gist 찾기
-    const gistList=await fetch('https://api.github.com/gists?per_page=100',{headers:{Authorization:`token ${val}`}});
-    if(gistList.ok){
-      const list=await gistList.json();
-      const found=list.find(g=>g.files&&g.files['notes.json']);
-      if(found){gistId=found.id;localStorage.setItem('notes_gist_id',gistId);}
-      // ID 맵 Gist 찾기
-      const mapGist=list.find(g=>g.description==='notes-id-map'&&g.files&&g.files[ID_MAP_FILE]);
-      await saveIdMap(val,id,mapGist);
-    }else{
-      await saveIdMap(val,id,null);
+    // 2. 기존 notes Gist 찾기
+    const gr=await fetch('https://api.github.com/gists?per_page=100',{headers:{Authorization:`token ${val}`}});
+    if(gr.ok){
+      const list=await gr.json();
+      const found=list.find(g=>g.files&&g.files['notes.json']&&g.description==='Notes App Backup');
+      if(found){gistId=found.id;localStorage.setItem('sgid',gistId);}
+      // 기존 ID 맵 Gist 찾기 (내 소유)
+      const mapFound=list.find(g=>g.description===`notes-id-map-${id}`);
+      if(mapFound)idMapGistId=mapFound.id;
     }
 
-    // 로컬 저장
-    localStorage.setItem(SAVED_ID_KEY,id);
-    localStorage.setItem('notes_gh_token_'+id,token);
+    // 3. ID 맵 Gist 저장 (공개)
+    await saveIdMapGist(val,id);
+
+    // 4. 로컬 저장
+    saveLocalAuth();
     setAvatar(u.avatar_url);
 
-    // ID 발급 화면 표시
+    // 5. 완료 화면
     document.getElementById('login-screen').style.display='none';
-    document.getElementById('issued-id-display').textContent=id;
-    document.getElementById('id-issued-screen').style.display='flex';
-
+    document.getElementById('issued-id').textContent=id;
+    document.getElementById('issued-screen').style.display='flex';
   }catch(e){
-    if(e.message==='invalid_token'){
-      document.getElementById('token-err').style.display='block';
-    }else{
-      toast('등록 중 오류: '+e.message);
-    }
+    if(e.message==='invalid_token'){document.getElementById('token-err').style.display='block';}
+    else{toast('등록 오류: '+e.message);}
     btn.textContent='등록';btn.disabled=false;
   }
 };
 
-// ── ID 맵 저장 ────────────────────────────────────
-async function saveIdMap(tok,id,existingMapGist){
-  const enc=encToken(tok,id);
-  const entry={enc,gistId:gistId||''};
-
-  let mapData={};
-  let mapGistId=existingMapGist?.id||'';
-
-  if(mapGistId){
-    // 기존 맵 읽기
+async function saveIdMapGist(tok,id){
+  const enc=encTok(tok,id);
+  const payload={[id]:{enc,gistId:gistId||''}};
+  const fname=`notes-id-map-${id}.json`;
+  const content=JSON.stringify(payload,null,2);
+  if(idMapGistId){
+    // 기존 맵 업데이트
     try{
-      const r=await fetch(`https://api.github.com/gists/${mapGistId}`,{headers:{Authorization:`token ${tok}`}});
-      if(r.ok){const d=await r.json();const c=d.files[ID_MAP_FILE]?.content;if(c)mapData=JSON.parse(c);}
+      const r=await fetch(`https://api.github.com/gists/${idMapGistId}`,{headers:{Authorization:`token ${tok}`}});
+      if(r.ok){
+        const d=await r.json();const oldFname=Object.keys(d.files).find(k=>k.startsWith('notes-id-map'));
+        const body={files:{}};
+        if(oldFname&&oldFname!==fname)body.files[oldFname]=null; // 삭제
+        body.files[fname]={content};
+        await fetch(`https://api.github.com/gists/${idMapGistId}`,{method:'PATCH',headers:{Authorization:`token ${tok}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+        return;
+      }
     }catch{}
   }
-
-  mapData[id]=entry;
-  const content=JSON.stringify(mapData,null,2);
-
-  if(mapGistId){
-    await fetch(`https://api.github.com/gists/${mapGistId}`,{
-      method:'PATCH',headers:{Authorization:`token ${tok}`,'Content-Type':'application/json'},
-      body:JSON.stringify({files:{[ID_MAP_FILE]:{content}}})
-    });
-  }else{
-    // 새 맵 Gist 생성 (공개)
-    const r=await fetch('https://api.github.com/gists',{
-      method:'POST',headers:{Authorization:`token ${tok}`,'Content-Type':'application/json'},
-      body:JSON.stringify({description:'notes-id-map',public:true,files:{[ID_MAP_FILE]:{content}}})
-    });
-    const d=await r.json();
-    mapGistId=d.id;
-  }
-  // 캐시
-  localStorage.setItem('id_map_gist_'+id,mapGistId);
+  // 새 Gist 생성 (공개 — 검색 가능해야 함)
+  const r=await fetch('https://api.github.com/gists',{
+    method:'POST',headers:{Authorization:`token ${tok}`,'Content-Type':'application/json'},
+    body:JSON.stringify({description:`notes-id-map-${id}`,public:true,files:{[fname]:{content}}})
+  });
+  const d=await r.json();
+  idMapGistId=d.id;
 }
 
-// ── gistId 업데이트 (저장 후 맵 갱신) ────────────
-async function updateIdMapGistId(){
-  if(!myId||!token||!gistId)return;
-  const cachedMapGistId=localStorage.getItem('id_map_gist_'+myId);
-  if(!cachedMapGistId)return;
+function saveLocalAuth(){
+  localStorage.setItem('sid',myId);
+  localStorage.setItem('stok_'+myId,token);
+  if(gistId)localStorage.setItem('sgid',gistId);
+  if(idMapGistId)localStorage.setItem('smgid_'+myId,idMapGistId);
+}
+
+// ID 맵의 gistId 갱신 (notes Gist 최초 생성 후)
+async function patchIdMapGistId(){
+  if(!idMapGistId||!token||!gistId||!myId)return;
   try{
-    const r=await fetch(`https://api.github.com/gists/${cachedMapGistId}`,{headers:{Authorization:`token ${token}`}});
+    const r=await fetch(`https://api.github.com/gists/${idMapGistId}`,{headers:{Authorization:`token ${token}`}});
     if(!r.ok)return;
-    const d=await r.json();const c=d.files[ID_MAP_FILE]?.content;
-    if(!c)return;
-    const mapData=JSON.parse(c);
-    if(mapData[myId]){
-      mapData[myId].gistId=gistId;
-      await fetch(`https://api.github.com/gists/${cachedMapGistId}`,{
-        method:'PATCH',headers:{Authorization:`token ${token}`,'Content-Type':'application/json'},
-        body:JSON.stringify({files:{[ID_MAP_FILE]:{content:JSON.stringify(mapData,null,2)}}})
-      });
+    const d=await r.json();
+    const fname=Object.keys(d.files).find(k=>k.startsWith('notes-id-map'));
+    if(!fname)return;
+    const data=JSON.parse(d.files[fname].content);
+    if(data[myId]){data[myId].gistId=gistId;
+      await fetch(`https://api.github.com/gists/${idMapGistId}`,{method:'PATCH',headers:{Authorization:`token ${token}`,'Content-Type':'application/json'},body:JSON.stringify({files:{[fname]:{content:JSON.stringify(data,null,2)}}})});
     }
   }catch{}
 }
 
-// ── ID 발급 완료 → 시작 ──────────────────────────
-document.getElementById('proceed-btn').onclick=()=>{
-  document.getElementById('id-issued-screen').style.display='none';
-  boot();
-};
+document.getElementById('proceed-btn').onclick=()=>{document.getElementById('issued-screen').style.display='none';boot();};
 
 // ── 부트 ──────────────────────────────────────────
 async function boot(){
   try{const r=await fetch('https://api.github.com/user',{headers:{Authorization:`token ${token}`}});const u=await r.json();setAvatar(u.avatar_url);if(!repoOwner){repoOwner=u.login;document.getElementById('repo-owner-in').value=repoOwner;}}catch{}
   document.getElementById('login-screen').style.display='none';
-  document.getElementById('id-issued-screen').style.display='none';
+  document.getElementById('issued-screen').style.display='none';
   document.getElementById('app').style.display='flex';
   document.getElementById('my-id-val').textContent=myId;
-  document.getElementById('my-id-display').onclick=()=>{navigator.clipboard.writeText(myId);toast('ID가 복사됐습니다!');};
+  document.getElementById('my-id-box').onclick=()=>{navigator.clipboard.writeText(myId).then(()=>toast('ID 복사됨!'));};
   renderFolders();renderAll();
-
-  const storedGistId=localStorage.getItem('notes_gist_id')||'';
-  if(storedGistId){gistId=storedGistId;await loadGist();}
+  if(gistId){await loadGist();}
   else{
     setSS('Gist 검색 중...');
     try{
       const r=await fetch('https://api.github.com/gists?per_page=100',{headers:{Authorization:`token ${token}`}});
-      if(r.ok){const list=await r.json();const f=list.find(g=>g.files&&g.files['notes.json']&&g.description==='Notes App Backup');if(f){gistId=f.id;localStorage.setItem('notes_gist_id',gistId);await loadGist();return;}}
+      if(r.ok){const list=await r.json();const f=list.find(g=>g.files&&g.files['notes.json']&&g.description==='Notes App Backup');if(f){gistId=f.id;saveLocalAuth();await loadGist();return;}}
     }catch{}
     if(!notes.length)notes=defNotes();
     renderAll();if(notes.length)selNote(notes[0].id);
@@ -661,7 +634,7 @@ async function loadGist(){
   setSS('불러오는 중...');
   try{
     const r=await fetch(`https://api.github.com/gists/${gistId}`,{headers:{Authorization:`token ${token}`}});
-    if(r.status===404){gistId='';localStorage.removeItem('notes_gist_id');setSS('⚠ Gist 없음');renderAll();return;}
+    if(r.status===404){gistId='';localStorage.removeItem('sgid');setSS('⚠ Gist 없음');renderAll();return;}
     const d=await r.json();const c=d.files['notes.json']?.content;
     if(c){const p=JSON.parse(c);notes=Array.isArray(p)?p:(p.notes||[]);if(p.folders&&Array.isArray(p.folders))folders=p.folders;localStorage.setItem(LK,JSON.stringify(notes));localStorage.setItem(FK,JSON.stringify(folders));}
     setSS('✓ 동기화됨');renderFolders();renderAll();if(notes.length)selNote(notes[0].id);
@@ -676,9 +649,8 @@ async function saveGist(){
       await fetch(`https://api.github.com/gists/${gistId}`,{method:'PATCH',headers:{Authorization:`token ${token}`,'Content-Type':'application/json'},body:JSON.stringify({files:{'notes.json':{content}}})});
     }else{
       const r=await fetch('https://api.github.com/gists',{method:'POST',headers:{Authorization:`token ${token}`,'Content-Type':'application/json'},body:JSON.stringify({description:'Notes App Backup',public:false,files:{'notes.json':{content}}})});
-      const d=await r.json();gistId=d.id;localStorage.setItem('notes_gist_id',gistId);
-      // ID 맵의 gistId 갱신
-      await updateIdMapGistId();
+      const d=await r.json();gistId=d.id;saveLocalAuth();
+      await patchIdMapGistId(); // ID 맵에 gistId 기록
     }
     localStorage.setItem(LK,JSON.stringify(notes));localStorage.setItem(FK,JSON.stringify(folders));
     setSS('✓ 동기화됨 · '+new Date().toLocaleTimeString());toast('☁ 저장 완료');
@@ -687,10 +659,10 @@ async function saveGist(){
 
 document.getElementById('sync-btn').onclick=saveGist;
 document.getElementById('logout-btn').onclick=()=>{
-  if(!confirm('로그아웃할까요?\n(이 기기에서만 로그아웃됩니다)'))return;
-  localStorage.removeItem(SAVED_ID_KEY);
-  localStorage.removeItem('notes_gh_token_'+myId);
-  token='';gistId='';myId='';notes=[];
+  if(!confirm('이 기기에서 로그아웃할까요?'))return;
+  ['sid','sgid'].forEach(k=>localStorage.removeItem(k));
+  localStorage.removeItem('stok_'+myId);localStorage.removeItem('smgid_'+myId);
+  token='';gistId='';myId='';idMapGistId='';notes=[];
   document.getElementById('app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('id-input').value='';
@@ -701,7 +673,7 @@ function setSS(s){document.getElementById('sync-status').textContent=s;}
 document.getElementById('settings-btn').onclick=()=>{document.getElementById('my-id-val').textContent=myId;openModal('settings-modal');};
 document.getElementById('font-sel').onchange=e=>{document.getElementById('md-ed').style.fontFamily=e.target.value;document.getElementById('preview').style.fontFamily=e.target.value;localStorage.setItem('s-font',e.target.value);};
 document.getElementById('font-size-range').oninput=e=>{const v=e.target.value;document.getElementById('md-ed').style.fontSize=v+'px';document.getElementById('preview').style.fontSize=v+'px';document.getElementById('fs-val').textContent=v;localStorage.setItem('s-fs',v);};
-document.getElementById('save-repo-btn').onclick=()=>{const o=document.getElementById('repo-owner-in').value.trim();const n=document.getElementById('repo-name-in').value.trim();if(!o||!n){toast('저장소 정보를 입력하세요.');return;}repoOwner=o;repoName=n;localStorage.setItem(RK,JSON.stringify({owner:o,name:n}));toast('저장소 설정이 저장됐어요!');};
+document.getElementById('save-repo-btn').onclick=()=>{const o=document.getElementById('repo-owner-in').value.trim();const n=document.getElementById('repo-name-in').value.trim();if(!o||!n){toast('저장소 정보를 입력하세요.');return;}repoOwner=o;repoName=n;localStorage.setItem(RK,JSON.stringify({owner:o,name:n}));toast('저장소 설정 저장 완료!');};
 
 // ── 모달 ──────────────────────────────────────────
 function openModal(id){document.getElementById(id).classList.add('open');}
@@ -712,13 +684,13 @@ function showProgress(name,pct){const w=document.getElementById('upload-progress
 function hideProgress(){document.getElementById('upload-progress-bar').style.width='100%';document.getElementById('upload-progress-pct').textContent='100%';setTimeout(()=>{document.getElementById('upload-progress-wrap').classList.remove('show');document.getElementById('upload-progress-bar').style.width='0%';},800);}
 
 // ── 파일 업로드 ───────────────────────────────────
-function fileIcon(name){const ext=name.split('.').pop().toLowerCase();if(['jpg','jpeg','png','gif','webp','svg'].includes(ext))return'🖼';if(['pdf'].includes(ext))return'📄';if(['zip','rar','7z'].includes(ext))return'🗜';if(['mp4','mov','avi'].includes(ext))return'🎬';if(['mp3','wav','m4a'].includes(ext))return'🎵';if(['doc','docx'].includes(ext))return'📝';if(['xls','xlsx'].includes(ext))return'📊';return'📎';}
+function fileIcon(name){const e=name.split('.').pop().toLowerCase();if(['jpg','jpeg','png','gif','webp','svg'].includes(e))return'🖼';if(e==='pdf')return'📄';if(['zip','rar','7z'].includes(e))return'🗜';if(['mp4','mov','avi'].includes(e))return'🎬';if(['mp3','wav','m4a'].includes(e))return'🎵';if(['doc','docx'].includes(e))return'📝';if(['xls','xlsx'].includes(e))return'📊';return'📎';}
 function fmtSize(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(1)+'KB';return(b/1048576).toFixed(1)+'MB';}
 function isImg(name){return['jpg','jpeg','png','gif','webp','svg'].includes(name.split('.').pop().toLowerCase());}
 
 function uploadFileToRepo(file){
   return new Promise(resolve=>{
-    if(!repoOwner||!repoName){toast('설정(⚙)에서 파일 저장소를 먼저 설정하세요.');openModal('settings-modal');resolve(null);return;}
+    if(!repoOwner||!repoName){toast('설정(⚙)에서 저장소를 먼저 설정하세요.');openModal('settings-modal');resolve(null);return;}
     if(file.size>25*1024*1024){toast(`${file.name}: 25MB 초과`);resolve(null);return;}
     showProgress(file.name,0);
     const reader=new FileReader();
@@ -726,19 +698,15 @@ function uploadFileToRepo(file){
     reader.onload=ev=>{
       const base64=ev.target.result.split(',')[1];
       const path=`files/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9가-힣._-]/g,'_')}`;
-      const body=JSON.stringify({message:`Upload ${file.name}`,content:base64});
       showProgress(file.name,40);
       const xhr=new XMLHttpRequest();
       xhr.open('PUT',`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`);
       xhr.setRequestHeader('Authorization',`token ${token}`);
       xhr.setRequestHeader('Content-Type','application/json');
       xhr.upload.onprogress=e=>{if(e.lengthComputable)showProgress(file.name,40+(e.loaded/e.total)*60);};
-      xhr.onload=()=>{
-        if(xhr.status>=200&&xhr.status<300){const d=JSON.parse(xhr.responseText);hideProgress();resolve({name:file.name,path,url:d.content.download_url,size:file.size,sha:d.content.sha});}
-        else{hideProgress();try{const err=JSON.parse(xhr.responseText);toast('업로드 실패: '+err.message);}catch{toast('업로드 오류');}resolve(null);}
-      };
+      xhr.onload=()=>{if(xhr.status>=200&&xhr.status<300){const d=JSON.parse(xhr.responseText);hideProgress();resolve({name:file.name,path,url:d.content.download_url,size:file.size,sha:d.content.sha});}else{hideProgress();try{const err=JSON.parse(xhr.responseText);toast('업로드 실패: '+err.message);}catch{toast('업로드 오류');}resolve(null);}};
       xhr.onerror=()=>{hideProgress();toast('네트워크 오류');resolve(null);};
-      xhr.send(body);
+      xhr.send(JSON.stringify({message:`Upload ${file.name}`,content:base64}));
     };
     reader.onerror=()=>{hideProgress();toast('파일 읽기 오류');resolve(null);};
     reader.readAsDataURL(file);
@@ -757,21 +725,21 @@ async function refreshFileList(){
   if(!files.length){el.innerHTML='<div style="padding:10px;text-align:center;color:var(--text2);font-size:12px;">업로드된 파일이 없습니다.</div>';return;}
   files.forEach(f=>{
     const d=document.createElement('div');d.className='file-item';
-    d.innerHTML=`<div class="file-item-icon">${fileIcon(f.name)}</div><div class="file-item-info"><div class="file-item-name">${f.name}</div><div class="file-item-size">${fmtSize(f.size||0)}</div></div><div class="file-item-btns">${isImg(f.name)?`<button onclick="insertImgToNote('${f.download_url}','${f.name}')">삽입</button>`:''}<button onclick="insertLinkToNote('${f.download_url}','${f.name}')">링크</button><button onclick="window.open('${f.download_url}','_blank')">다운</button><button onclick="confirmDeleteFile('${f.path}','${f.sha}')" style="color:var(--danger);">삭제</button></div>`;
+    d.innerHTML=`<div class="file-item-icon">${fileIcon(f.name)}</div><div class="file-item-info"><div class="file-item-name">${f.name}</div><div class="file-item-size">${fmtSize(f.size||0)}</div></div><div class="file-item-btns">${isImg(f.name)?`<button onclick="insertImg('${f.download_url}','${f.name}')">삽입</button>`:''}<button onclick="insertLink('${f.download_url}','${f.name}')">링크</button><button onclick="window.open('${f.download_url}','_blank')">다운</button><button onclick="delFile('${f.path}','${f.sha}')" style="color:var(--danger);">삭제</button></div>`;
     el.appendChild(d);
   });
 }
-window.insertImgToNote=function(url,name){ins(`\n![${name}](${url})\n`);closeModal('file-modal');toast('이미지 삽입 완료');};
-window.insertLinkToNote=function(url,name){ins(`[${name}](${url})`);closeModal('file-modal');toast('링크 삽입 완료');};
-window.confirmDeleteFile=async function(path,sha){if(!confirm('파일을 삭제할까요?'))return;await deleteRepoFile(path,sha);toast('삭제됐습니다.');await refreshFileList();};
+window.insertImg=function(url,name){ins(`\n![${name}](${url})\n`);closeModal('file-modal');toast('이미지 삽입 완료');};
+window.insertLink=function(url,name){ins(`[${name}](${url})`);closeModal('file-modal');toast('링크 삽입 완료');};
+window.delFile=async function(path,sha){if(!confirm('파일을 삭제할까요?'))return;await deleteRepoFile(path,sha);toast('삭제됐습니다.');await refreshFileList();};
 
 const uploadZone=document.getElementById('file-upload-zone'),uploadInput=document.getElementById('file-upload-input');
 uploadZone.onclick=()=>uploadInput.click();
 uploadZone.ondragover=e=>{e.preventDefault();uploadZone.classList.add('drag');};
 uploadZone.ondragleave=()=>uploadZone.classList.remove('drag');
-uploadZone.ondrop=async e=>{e.preventDefault();uploadZone.classList.remove('drag');await handleFileUpload([...e.dataTransfer.files]);};
-uploadInput.onchange=async e=>{await handleFileUpload([...e.target.files]);e.target.value='';};
-async function handleFileUpload(files){if(!files.length)return;let ok=0;for(const f of files){const r=await uploadFileToRepo(f);if(r)ok++;}if(ok>0){toast(`${ok}개 업로드 완료!`);await refreshFileList();}}
+uploadZone.ondrop=async e=>{e.preventDefault();uploadZone.classList.remove('drag');await handleUpload([...e.dataTransfer.files]);};
+uploadInput.onchange=async e=>{await handleUpload([...e.target.files]);e.target.value='';};
+async function handleUpload(files){if(!files.length)return;let ok=0;for(const f of files){const r=await uploadFileToRepo(f);if(r)ok++;}if(ok>0){toast(`${ok}개 업로드 완료!`);await refreshFileList();}}
 document.getElementById('attach-file').onchange=async e=>{const files=[...e.target.files];if(!files.length)return;for(const f of files){const r=await uploadFileToRepo(f);if(r){if(isImg(f.name))ins(`\n![${f.name}](${r.url})\n`);else ins(`[${f.name}](${r.url})`);}}e.target.value='';toast('첨부 완료!');};
 
 // ── 폴더 ──────────────────────────────────────────
@@ -779,7 +747,7 @@ function saveF(){localStorage.setItem(FK,JSON.stringify(folders));}
 function flatFolders(list,depth=0){let res=[];(list||[]).forEach(f=>{res.push({...f,depth});if(f.children)res=res.concat(flatFolders(f.children,depth+1));});return res;}
 function renderFolders(){
   const tree=document.getElementById('folder-tree');tree.innerHTML='';
-  const mk=(text,fid)=>{const d=document.createElement('div');d.className='folder-item'+(afolder===fid?' on':'');d.innerHTML=text;d.onclick=()=>{afolder=fid;atag=null;renderFolders();renderAll();};return d;};
+  const mk=(txt,fid)=>{const d=document.createElement('div');d.className='folder-item'+(afolder===fid?' on':'');d.innerHTML=txt;d.onclick=()=>{afolder=fid;atag=null;renderFolders();renderAll();};return d;};
   tree.appendChild(mk('📋 전체 노트','all'));tree.appendChild(mk('⭐ 즐겨찾기','fav'));
   const rl=(list,depth)=>{(list||[]).forEach(f=>{const d=document.createElement('div');d.className='folder-item'+(afolder===f.id?' on':'');d.style.paddingLeft=(10+depth*14)+'px';d.innerHTML=`<span style="margin-right:4px;">${f.children&&f.children.length?'📂':'📁'}</span><span style="flex:1;">${f.name}</span><span style="font-size:10px;color:var(--text2);cursor:pointer;padding:0 4px;" onclick="event.stopPropagation();delFolder('${f.id}')">✕</span>`;d.onclick=()=>{afolder=f.id;atag=null;renderFolders();renderAll();};tree.appendChild(d);if(f.children)rl(f.children,depth+1);});};
   rl(folders,0);
@@ -787,27 +755,23 @@ function renderFolders(){
   const psel=document.getElementById('parent-sel');psel.innerHTML='<option value="root">루트 (최상위)</option>';flatFolders(folders).forEach(f=>{const o=document.createElement('option');o.value=f.id;o.textContent='　'.repeat(f.depth)+'📁 '+f.name;psel.appendChild(o);});
 }
 document.getElementById('new-folder-btn').onclick=()=>openModal('folder-modal');
-document.getElementById('folder-ok-btn').onclick=()=>{const name=document.getElementById('folder-name-in').value.trim();if(!name){toast('폴더 이름을 입력하세요.');return;}const parentId=document.getElementById('parent-sel').value;const newF={id:'f'+Date.now(),name,children:[]};if(parentId==='root'){folders.push(newF);}else{const parent=findFolder(folders,parentId);if(parent){if(!parent.children)parent.children=[];parent.children.push(newF);}else folders.push(newF);}saveF();renderFolders();document.getElementById('folder-name-in').value='';closeModal('folder-modal');toast('폴더가 생성됐어요!');};
+document.getElementById('folder-ok-btn').onclick=()=>{const name=document.getElementById('folder-name-in').value.trim();if(!name){toast('폴더 이름을 입력하세요.');return;}const pid=document.getElementById('parent-sel').value;const nf={id:'f'+Date.now(),name,children:[]};if(pid==='root')folders.push(nf);else{const p=findFolder(folders,pid);if(p){if(!p.children)p.children=[];p.children.push(nf);}else folders.push(nf);}saveF();renderFolders();document.getElementById('folder-name-in').value='';closeModal('folder-modal');toast('폴더 생성 완료!');};
 function findFolder(list,id){for(const f of(list||[])){if(f.id===id)return f;const r=findFolder(f.children,id);if(r)return r;}return null;}
-window.delFolder=function(id){if(!confirm('폴더를 삭제할까요?'))return;const remove=(list)=>list.filter(f=>{f.children=remove(f.children||[]);return f.id!==id;});folders=remove(folders);saveF();renderFolders();toast('폴더가 삭제됐어요.');};
+window.delFolder=function(id){if(!confirm('폴더를 삭제할까요?'))return;const rm=(l)=>l.filter(f=>{f.children=rm(f.children||[]);return f.id!==id;});folders=rm(folders);saveF();renderFolders();toast('폴더 삭제 완료');};
 
 // ── 휴지통 ────────────────────────────────────────
-document.getElementById('trash-btn').onclick=()=>{const el=document.getElementById('trash-list');el.innerHTML=trash.length?'':'<p style="padding:10px;color:var(--text2);text-align:center;">비어있습니다.</p>';trash.forEach((n,i)=>{const d=document.createElement('div');d.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:8px 4px;border-bottom:1px solid var(--border);font-size:13px;';d.innerHTML=`<span>${n.title||'제목 없음'}</span><button style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:12px;" onclick="restoreNote(${i})">복원</button>`;el.appendChild(d);});openModal('trash-modal');};
-document.getElementById('trash-empty-btn').onclick=()=>{if(!confirm('휴지통을 비울까요?'))return;trash=[];localStorage.setItem(TRASHK,'[]');closeModal('trash-modal');toast('휴지통을 비웠습니다.');};
-window.restoreNote=function(i){notes.unshift(trash[i]);trash.splice(i,1);saveL();localStorage.setItem(TRASHK,JSON.stringify(trash));closeModal('trash-modal');renderAll();toast('복원했습니다.');};
+document.getElementById('trash-btn').onclick=()=>{const el=document.getElementById('trash-list');el.innerHTML=trash.length?'':'<p style="padding:10px;color:var(--text2);text-align:center;">비어있습니다.</p>';trash.forEach((n,i)=>{const d=document.createElement('div');d.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:8px 4px;border-bottom:1px solid var(--border);font-size:13px;';d.innerHTML=`<span>${n.title||'제목 없음'}</span><button style="background:none;border:none;color:var(--accent);cursor:pointer;" onclick="restoreNote(${i})">복원</button>`;el.appendChild(d);});openModal('trash-modal');};
+document.getElementById('trash-empty-btn').onclick=()=>{if(!confirm('휴지통을 비울까요?'))return;trash=[];localStorage.setItem(TRASHK,'[]');closeModal('trash-modal');toast('휴지통 비우기 완료');};
+window.restoreNote=function(i){notes.unshift(trash[i]);trash.splice(i,1);saveL();localStorage.setItem(TRASHK,JSON.stringify(trash));closeModal('trash-modal');renderAll();toast('복원 완료');};
 
 // ── 노트 ──────────────────────────────────────────
 function genId(){return 'n'+Date.now()+Math.random().toString(36).slice(2);}
-function defNotes(){return [{id:'demo1',title:'환영합니다! 📝',body:'# Notes 앱\n\n**ID 로그인** 방식으로 어느 기기에서나 접근 가능합니다.\n\n- [x] ID로 간편 로그인\n- [x] GitHub Gist 동기화\n- [x] 파일 업로드\n- [ ] 나만의 노트 작성\n\n> 설정(⚙)에서 내 ID를 확인하고 복사할 수 있습니다.',folder:'all',tags:['가이드'],created:Date.now(),favorite:false}];}
+function defNotes(){return [{id:'demo1',title:'환영합니다! 📝',body:'# Notes 앱\n\n**ID 로그인**으로 어느 기기에서나 접근 가능합니다.\n\n- [x] ID 하나로 모든 기기 로그인\n- [x] GitHub Gist 동기화\n- [x] 파일 업로드 (진행률 표시)\n- [x] 폴더 & 태그 관리\n- [ ] 나만의 노트 작성\n\n> 설정(⚙)에서 내 ID를 확인하고 복사할 수 있어요.',folder:'all',tags:['가이드'],created:Date.now(),favorite:false}];}
 function saveL(){localStorage.setItem(LK,JSON.stringify(notes));}
 function filtered(){return notes.filter(n=>{if(afolder==='fav')return n.favorite;if(afolder!=='all'&&n.folder!==afolder)return false;if(atag&&!(n.tags||[]).includes(atag))return false;if(sq){const q=sq.toLowerCase();if(!n.title.toLowerCase().includes(q)&&!n.body.toLowerCase().includes(q))return false;}return true;}).sort((a,b)=>b.created-a.created);}
 function allTags(){const t=new Set();notes.forEach(n=>(n.tags||[]).forEach(g=>t.add(g)));return[...t];}
 function renderAll(){renderList();renderTags();}
-function renderList(){
-  const el=document.getElementById('note-list');const fn=filtered();el.innerHTML='';
-  if(!fn.length){el.innerHTML='<div style="padding:10px;text-align:center;color:var(--text2);font-size:12px;">노트 없음</div>';return;}
-  fn.forEach(n=>{const d=document.createElement('div');d.className='nrow'+(n.id===cur?' on':'');const pv=n.body.replace(/[#`*_>\-\[\]!|]/g,'').replace(/\n/g,' ').slice(0,45);const tg=(n.tags||[]).map(t=>`<span class="ntag">${t}</span>`).join('');d.innerHTML=`<div class="nt">${n.title||'제목 없음'}</div><div class="np">${pv||'내용 없음'}</div><div class="ntags">${tg}</div><span class="nrow-fav${n.favorite?' on':''}">★</span>`;d.querySelector('.nrow-fav').onclick=e=>{e.stopPropagation();n.favorite=!n.favorite;saveL();renderList();};d.onclick=()=>{selNote(n.id);if(window.innerWidth<=700)closeSB();};el.appendChild(d);});
-}
+function renderList(){const el=document.getElementById('note-list');const fn=filtered();el.innerHTML='';if(!fn.length){el.innerHTML='<div style="padding:10px;text-align:center;color:var(--text2);font-size:12px;">노트 없음</div>';return;}fn.forEach(n=>{const d=document.createElement('div');d.className='nrow'+(n.id===cur?' on':'');const pv=n.body.replace(/[#`*_>\-\[\]!|]/g,'').replace(/\n/g,' ').slice(0,45);const tg=(n.tags||[]).map(t=>`<span class="ntag">${t}</span>`).join('');d.innerHTML=`<div class="nt">${n.title||'제목 없음'}</div><div class="np">${pv||'내용 없음'}</div><div class="ntags">${tg}</div><span class="nrow-fav${n.favorite?' on':''}">★</span>`;d.querySelector('.nrow-fav').onclick=e=>{e.stopPropagation();n.favorite=!n.favorite;saveL();renderList();};d.onclick=()=>{selNote(n.id);if(window.innerWidth<=700)closeSB();};el.appendChild(d);});}
 function renderTags(){const a=document.getElementById('tag-area');const tags=allTags();a.innerHTML='';tags.forEach(t=>{const p=document.createElement('span');p.className='tag-pill'+(atag===t?' on':'');p.textContent=t;p.onclick=()=>{atag=atag===t?null:t;renderAll();};a.appendChild(p);});}
 function selNote(id){cur=id;const n=notes.find(x=>x.id===id);if(!n)return;document.getElementById('title-in').value=n.title;document.getElementById('md-ed').value=n.body;document.getElementById('folder-sel').value=n.folder||'all';renderFTags(n.tags||[]);renderList();if(!editMode)renderPrev();}
 function renderFTags(tags){
@@ -816,7 +780,7 @@ function renderFTags(tags){
   const wrap2=document.createElement('div');wrap2.style.cssText='position:relative;display:inline-flex;';
   const inp=document.createElement('input');inp.id='tag-in';inp.placeholder='태그 추가...';inp.style.cssText='border:none;background:transparent;color:var(--text2);font-size:12px;outline:none;width:80px;';
   const ac=document.createElement('div');ac.style.cssText='position:absolute;bottom:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:6px;font-size:12px;z-index:50;max-height:150px;overflow-y:auto;display:none;box-shadow:0 -4px 12px rgba(0,0,0,0.15);min-width:120px;';
-  inp.oninput=()=>{const q=inp.value.trim().toLowerCase();ac.innerHTML='';if(!q){ac.style.display='none';return;}const curTags=(notes.find(x=>x.id===cur)?.tags||[]);const matches=allTags().filter(t=>t.toLowerCase().includes(q)&&!curTags.includes(t));if(!matches.length){ac.style.display='none';return;}matches.forEach(t=>{const item=document.createElement('div');item.textContent=t;item.style.cssText='padding:6px 10px;cursor:pointer;white-space:nowrap;';item.onmousedown=e=>{e.preventDefault();addTag(t);inp.value='';ac.style.display='none';};item.onmouseover=()=>item.style.background='var(--surface2)';item.onmouseout=()=>item.style.background='';ac.appendChild(item);});ac.style.display='block';};
+  inp.oninput=()=>{const q=inp.value.trim().toLowerCase();ac.innerHTML='';if(!q){ac.style.display='none';return;}const ct=(notes.find(x=>x.id===cur)?.tags||[]);const m=allTags().filter(t=>t.toLowerCase().includes(q)&&!ct.includes(t));if(!m.length){ac.style.display='none';return;}m.forEach(t=>{const item=document.createElement('div');item.textContent=t;item.style.cssText='padding:6px 10px;cursor:pointer;white-space:nowrap;';item.onmousedown=e=>{e.preventDefault();addTag(t);inp.value='';ac.style.display='none';};item.onmouseover=()=>item.style.background='var(--surface2)';item.onmouseout=()=>item.style.background='';ac.appendChild(item);});ac.style.display='block';};
   inp.onkeydown=e=>{if(e.key==='Enter'||e.key===','){e.preventDefault();const first=ac.querySelector('div');const val=first&&ac.style.display!=='none'?first.textContent:inp.value.trim();if(val){addTag(val);inp.value='';ac.style.display='none';}}if(e.key==='Escape')ac.style.display='none';if(e.key==='ArrowDown'&&ac.style.display!=='none'){e.preventDefault();ac.querySelector('div')?.focus();}};
   inp.onblur=()=>setTimeout(()=>ac.style.display='none',150);
   wrap2.appendChild(inp);wrap2.appendChild(ac);w.appendChild(wrap2);
@@ -832,10 +796,8 @@ document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){
 // ── 마크다운 파서 ──────────────────────────────────
 function parseMd(raw){
   if(!raw||!raw.trim())return '<p style="color:var(--text2);font-size:13px;">내용을 입력하면 미리보기가 표시됩니다.</p>';
-  const codes={};
-  let md=raw.replace(/```([\s\S]*?)```/g,(m,inner)=>{const k='__C'+(Object.keys(codes).length)+'__';const id='cb'+Math.random().toString(36).slice(2);const safe=inner.replace(/^[^\n]*\n?/,'').trimEnd().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');codes[k]=`<div class="cb-wrap"><pre><code id="${id}">${safe}</code></pre><button class="copy-btn" onclick="cpCode('${id}')">복사</button></div>`;return k;});
-  const imgs={};
-  md=md.replace(/!\[([^\]]*)\]\((https?:\/\/[^)]+)\)/g,(m,alt,src)=>{const k='__IMG'+(Object.keys(imgs).length)+'__';imgs[k]=`<img src="${src}" alt="${alt}" style="max-width:100%;border-radius:6px;margin:4px 0;display:block;"/>`;return k;});
+  const codes={};let md=raw.replace(/```([\s\S]*?)```/g,(m,inner)=>{const k='__C'+(Object.keys(codes).length)+'__';const id='cb'+Math.random().toString(36).slice(2);const safe=inner.replace(/^[^\n]*\n?/,'').trimEnd().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');codes[k]=`<div class="cb-wrap"><pre><code id="${id}">${safe}</code></pre><button class="copy-btn" onclick="cpCode('${id}')">복사</button></div>`;return k;});
+  const imgs={};md=md.replace(/!\[([^\]]*)\]\((https?:\/\/[^)]+)\)/g,(m,alt,src)=>{const k='__I'+(Object.keys(imgs).length)+'__';imgs[k]=`<img src="${src}" alt="${alt}" style="max-width:100%;border-radius:6px;margin:4px 0;display:block;"/>`;return k;});
   md=md.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   md=md.replace(/^#{3} (.+)$/gm,'<h3>$1</h3>').replace(/^#{2} (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>').replace(/^---$/gm,'<hr>').replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/`([^`\n]+)`/g,'<code>$1</code>');
   md=md.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,'<a href="$2" target="_blank" style="color:var(--accent);">$1</a>');
