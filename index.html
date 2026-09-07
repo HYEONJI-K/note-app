@@ -35,6 +35,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .id-box .ival{font-size:18px;font-weight:700;letter-spacing:2px;color:var(--accent);font-family:'Courier New',monospace;word-break:break-all;}
 .id-box .isub{font-size:11px;color:var(--text2);margin-top:4px;}
 .lnote{font-size:11px;color:var(--text2);background:var(--surface2);border-radius:8px;padding:8px 10px;line-height:1.6;}
+.pw-strength{height:4px;border-radius:2px;margin-top:2px;transition:width .3s,background .3s;width:0%;}
 
 /* 앱 */
 #app{display:none;flex-direction:column;flex:1;min-height:0;}
@@ -162,7 +163,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 #upload-progress-bar-wrap{background:var(--surface2);border-radius:20px;height:8px;overflow:hidden;margin-bottom:6px;}
 #upload-progress-bar{height:100%;background:var(--accent);border-radius:20px;width:0%;transition:width .2s;}
 #upload-progress-pct{font-size:13px;font-weight:500;color:var(--accent);text-align:right;}
-/* 노트 공유 뷰 */
 #share-view{display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden;}
 #share-header{padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:10px;flex-shrink:0;}
 #share-title{font-size:18px;font-weight:500;flex:1;}
@@ -192,29 +192,36 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 <div id="login-screen">
   <h1>📝 Notes</h1>
   <div class="lcard">
-    <h2>🔑 ID로 로그인</h2>
-    <div class="lrow">
-      <input id="id-input" placeholder="예: hyeonji/abc123" autocomplete="off" spellcheck="false"/>
-      <button class="lbtn" id="id-login-btn">로그인</button>
+    <h2>🔑 ID + 비밀번호로 로그인</h2>
+    <input class="linput" id="id-input" placeholder="예: hyeonji/abc123" autocomplete="off" spellcheck="false"/>
+    <input class="linput" id="login-pw-input" type="password" placeholder="비밀번호"/>
+    <div class="lrow" style="gap:6px;">
+      <button class="lbtn" id="id-login-btn" style="width:100%;">로그인</button>
     </div>
-    <div class="lerr" id="id-err">ID를 찾을 수 없습니다.</div>
-    <div class="lhint">형식: GitHub아이디/코드 (등록 후 확인)</div>
+    <div class="lerr" id="id-err">ID 또는 비밀번호가 올바르지 않습니다.</div>
+    <div class="lhint">형식: GitHub아이디/코드 · 비밀번호는 등록 시 설정한 것</div>
   </div>
   <div class="ldiv">처음 사용하는 경우</div>
   <div class="lcard">
     <h2>🔗 GitHub 토큰으로 등록</h2>
     <input class="linput" id="token-input" type="password" placeholder="ghp_..." autocomplete="off"/>
     <div class="lrow">
-      <input id="custom-code-input" placeholder="코드 직접 입력 (선택, 영문숫자)" maxlength="8" autocomplete="off" spellcheck="false"/>
-      <button class="lbtn sec" id="gen-code-btn" title="코드 자동생성">🎲</button>
-      <button class="lbtn" id="token-reg-btn">등록</button>
+      <input id="custom-code-input" placeholder="코드 (선택, 영문숫자)" maxlength="8" autocomplete="off" spellcheck="false"/>
+      <button class="lbtn sec" id="gen-code-btn">🎲</button>
     </div>
-    <div class="lerr" id="token-err">토큰이 올바르지 않습니다.</div>
+    <input class="linput" id="reg-pw-input" type="password" placeholder="비밀번호 설정 (필수, 8자 이상 권장)"/>
+    <div style="background:var(--surface2);border-radius:4px;overflow:hidden;height:4px;">
+      <div class="pw-strength" id="pw-strength-bar"></div>
+    </div>
+    <div style="font-size:11px;color:var(--text2);" id="pw-strength-label"></div>
+    <input class="linput" id="reg-pw-confirm" type="password" placeholder="비밀번호 확인"/>
+    <div class="lerr" id="reg-err"></div>
+    <button class="lbtn" id="token-reg-btn" style="width:100%;">등록</button>
     <div class="lhint"><a href="https://github.com/settings/tokens/new?scopes=gist,repo&description=notes-app" target="_blank">토큰 발급 (gist + repo 권한)</a></div>
   </div>
 </div>
 
-<!-- 등록 완료 화면 -->
+<!-- 등록 완료 -->
 <div id="issued-screen" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:16px;padding:24px;">
   <h1>📝 Notes</h1>
   <div class="lcard">
@@ -222,9 +229,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
     <div class="id-box">
       <div class="ilab">나의 로그인 ID</div>
       <div class="ival" id="issued-id">-</div>
-      <div class="isub">어느 기기에서나 이 ID로 로그인하세요</div>
+      <div class="isub">다른 기기에서 ID + 비밀번호로 로그인하세요</div>
     </div>
-    <div class="lnote">⚠️ ID를 반드시 메모하거나 복사해두세요.<br>잃어버린 경우 토큰으로 재등록하면 새 ID가 발급됩니다.</div>
+    <div class="lnote">
+      🔒 <b>보안 방식:</b> 토큰이 AES-256으로 암호화되어 저장됩니다.<br>
+      비밀번호를 모르면 누구도 토큰을 복원할 수 없습니다.<br><br>
+      ⚠️ ID와 비밀번호를 안전한 곳에 보관하세요.<br>
+      비밀번호 분실 시 토큰으로 재등록해야 합니다.
+    </div>
     <button class="lbtn sec" id="copy-issued-id-btn" style="width:100%;">📋 ID 복사</button>
     <button class="lbtn" id="proceed-btn" style="width:100%;">시작하기 →</button>
   </div>
@@ -242,7 +254,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
       <div class="tbtn" data-t="light-green" id="tb-green" title="그린"></div>
       <div class="tbtn" data-t="dark" id="tb-dark" title="다크"></div>
       <button class="icon-btn" id="new-folder-btn" title="새 폴더">📁+</button>
-      <button class="icon-btn" id="share-note-btn" title="현재 노트 링크 공유">🔗</button>
+      <button class="icon-btn" id="share-note-btn" title="노트 링크 공유">🔗</button>
       <button class="icon-btn" id="file-mgr-btn" title="파일 관리">📎</button>
       <button class="icon-btn" id="settings-btn" title="설정">⚙</button>
       <button class="icon-btn" id="trash-btn" title="휴지통">🗑</button>
@@ -411,15 +423,65 @@ let token='',gistId='',myId='',ghUser='',idMapGistId='';
 let notes=[],folders=[],trash=[],cur=null,afolder='all',atag=null,sq='',editMode=true;
 let repoOwner='',repoName='';
 
-// ── 난독화 ────────────────────────────────────────
-function xorEnc(s,k){let r='';for(let i=0;i<s.length;i++)r+=String.fromCharCode(s.charCodeAt(i)^k.charCodeAt(i%k.length));return btoa(unescape(encodeURIComponent(r)));}
-function xorDec(b,k){try{const s=decodeURIComponent(escape(atob(b)));let r='';for(let i=0;i<s.length;i++)r+=String.fromCharCode(s.charCodeAt(i)^k.charCodeAt(i%k.length));return r;}catch{return null;}}
-function encTok(tok,code){return xorEnc(tok,code+'_nts2024');}
-function decTok(enc,code){return xorDec(enc,code+'_nts2024');}
+// ── AES-256-GCM 암호화 (Web Crypto API) ──────────
+async function deriveKey(password,salt){
+  const enc=new TextEncoder();
+  const keyMaterial=await crypto.subtle.importKey('raw',enc.encode(password),{name:'PBKDF2'},false,['deriveKey']);
+  return crypto.subtle.deriveKey(
+    {name:'PBKDF2',salt,iterations:200000,hash:'SHA-256'},
+    keyMaterial,{name:'AES-GCM',length:256},false,['encrypt','decrypt']
+  );
+}
 
-// ── ID 형식: "githubUsername/randomCode" ─────────
+async function aesEncrypt(plaintext,password){
+  const salt=crypto.getRandomValues(new Uint8Array(16));
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const key=await deriveKey(password,salt);
+  const enc=new TextEncoder();
+  const ciphertext=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,enc.encode(plaintext));
+  // salt(16) + iv(12) + ciphertext를 base64로
+  const combined=new Uint8Array(16+12+ciphertext.byteLength);
+  combined.set(salt,0);combined.set(iv,16);combined.set(new Uint8Array(ciphertext),28);
+  return btoa(String.fromCharCode(...combined));
+}
+
+async function aesDecrypt(b64,password){
+  try{
+    const combined=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
+    const salt=combined.slice(0,16);
+    const iv=combined.slice(16,28);
+    const ciphertext=combined.slice(28);
+    const key=await deriveKey(password,salt);
+    const decrypted=await crypto.subtle.decrypt({name:'AES-GCM',iv},key,ciphertext);
+    return new TextDecoder().decode(decrypted);
+  }catch{return null;}
+}
+
+// ── ID 형식: "githubUsername/code" ───────────────
 function makeCode(){const c='abcdefghijklmnopqrstuvwxyz0123456789';let s='';for(let i=0;i<6;i++)s+=c[Math.floor(Math.random()*c.length)];return s;}
-function parseId(id){const p=id.split('/');return p.length===2?{user:p[0].trim(),code:p[1].trim()}:null;}
+function parseId(id){const p=id.trim().split('/');return p.length===2?{user:p[0].trim().toLowerCase(),code:p[1].trim().toLowerCase()}:null;}
+
+// ── 비밀번호 강도 ─────────────────────────────────
+function checkPwStrength(pw){
+  let score=0;
+  if(pw.length>=8)score++;if(pw.length>=12)score++;
+  if(/[A-Z]/.test(pw))score++;if(/[0-9]/.test(pw))score++;if(/[^A-Za-z0-9]/.test(pw))score++;
+  const bar=document.getElementById('pw-strength-bar');
+  const label=document.getElementById('pw-strength-label');
+  const levels=[
+    {w:'0%',bg:'transparent',text:''},
+    {w:'25%',bg:'#dc2626',text:'매우 약함'},
+    {w:'50%',bg:'#f97316',text:'약함'},
+    {w:'75%',bg:'#eab308',text:'보통'},
+    {w:'90%',bg:'#22c55e',text:'강함'},
+    {w:'100%',bg:'#16a34a',text:'매우 강함'},
+  ];
+  const lv=Math.min(score,5);
+  bar.style.width=levels[lv].w;bar.style.background=levels[lv].bg;
+  label.textContent=pw.length>0?levels[lv].text:'';
+  label.style.color=levels[lv].bg;
+}
+document.getElementById('reg-pw-input').oninput=e=>checkPwStrength(e.target.value);
 
 // ── 테마 ──────────────────────────────────────────
 function applyTheme(t){document.body.className=t;localStorage.setItem('s-theme',t);document.querySelectorAll('.tbtn').forEach(x=>x.classList.toggle('on',x.dataset.t===t));}
@@ -434,11 +496,11 @@ window.onload=()=>{
   repoOwner=repo.owner||'';repoName=repo.name||'';
   applySettings();
   document.getElementById('custom-code-input').value=makeCode();
-  // URL에 공유 파라미터가 있으면 공유 뷰
+  // URL 공유 파라미터
   const params=new URLSearchParams(location.search);
-  const shareGid=params.get('gid');const shareNid=params.get('nid');
+  const shareGid=params.get('gid'),shareNid=params.get('nid');
   if(shareGid&&shareNid){loadSharedNote(shareGid,shareNid);return;}
-  // 자동 로그인
+  // 자동 로그인 (이 기기에 세션 저장된 경우)
   const sid=localStorage.getItem('sid');
   const stok=sid?localStorage.getItem('stok_'+sid):'';
   if(sid&&stok){
@@ -462,53 +524,42 @@ function applySettings(){
 
 document.getElementById('gen-code-btn').onclick=()=>{document.getElementById('custom-code-input').value=makeCode();};
 
-// ── ID 로그인 ─────────────────────────────────────
-// 핵심: ID = "githubUsername/code"
-// → githubUsername으로 그 사람의 공개 Gist 목록을 조회
-// → description이 "notes-id-map-{code}"인 Gist를 찾음
-// → 토큰 복원
+// ── ID 로그인 (ID + 비밀번호) ─────────────────────
 document.getElementById('id-login-btn').onclick=async()=>{
-  const raw=document.getElementById('id-input').value.trim().toLowerCase();
+  const raw=document.getElementById('id-input').value.trim();
+  const pw=document.getElementById('login-pw-input').value;
   const parsed=parseId(raw);
   if(!parsed||!parsed.user||!parsed.code){
-    document.getElementById('id-err').textContent='형식이 올바르지 않습니다. 예: hyeonji/abc123';
-    document.getElementById('id-err').style.display='block';return;
+    showErr('id-err','형식이 올바르지 않습니다. 예: hyeonji/abc123');return;
   }
+  if(!pw){showErr('id-err','비밀번호를 입력하세요.');return;}
   const btn=document.getElementById('id-login-btn');
   btn.textContent='검색 중...';btn.disabled=true;
-  document.getElementById('id-err').style.display='none';
+  hideErr('id-err');
   try{
     const result=await findIdMap(parsed.user,parsed.code);
-    if(!result){
-      document.getElementById('id-err').textContent='ID를 찾을 수 없습니다. GitHub 아이디와 코드를 확인하세요.';
-      document.getElementById('id-err').style.display='block';
-      btn.textContent='로그인';btn.disabled=false;return;
-    }
-    const decrypted=decTok(result.enc,parsed.code);
-    if(!decrypted){
-      document.getElementById('id-err').textContent='복호화 실패. ID를 다시 확인하세요.';
-      document.getElementById('id-err').style.display='block';
-      btn.textContent='로그인';btn.disabled=false;return;
-    }
-    token=decrypted;myId=raw;ghUser=parsed.user;
+    if(!result){showErr('id-err','ID를 찾을 수 없습니다. GitHub 아이디와 코드를 확인하세요.');btn.textContent='로그인';btn.disabled=false;return;}
+    // AES 복호화 (비밀번호 틀리면 null 반환)
+    const decrypted=await aesDecrypt(result.enc,pw);
+    if(!decrypted){showErr('id-err','비밀번호가 올바르지 않습니다.');btn.textContent='로그인';btn.disabled=false;return;}
+    token=decrypted;myId=raw.toLowerCase();ghUser=parsed.user;
     gistId=result.gistId||'';idMapGistId=result.mapGistId;
     saveLocalAuth();boot();
   }catch(e){
-    document.getElementById('id-err').textContent='오류: '+e.message;
-    document.getElementById('id-err').style.display='block';
-    btn.textContent='로그인';btn.disabled=false;
+    showErr('id-err','오류: '+e.message);btn.textContent='로그인';btn.disabled=false;
   }
 };
 
-// GitHub 사용자의 Gist 목록에서 ID 맵 Gist 찾기
+// Enter 키 로그인
+document.getElementById('login-pw-input').onkeydown=e=>{if(e.key==='Enter')document.getElementById('id-login-btn').click();};
+
+// ── GitHub 사용자 Gist 목록에서 ID 맵 찾기 ────────
 async function findIdMap(user,code){
-  // 1. 로컬 캐시로 바로 조회
   const cachedMgid=localStorage.getItem('smgid_'+user+'/'+code);
   if(cachedMgid){
     const data=await fetchMapData(cachedMgid);
     if(data&&data[code])return{...data[code],mapGistId:cachedMgid};
   }
-  // 2. 해당 GitHub 사용자의 공개 Gist 목록 검색 (인증 불필요)
   for(let page=1;page<=5;page++){
     const r=await fetch(`https://api.github.com/users/${user}/gists?per_page=30&page=${page}`);
     if(!r.ok)break;
@@ -517,10 +568,7 @@ async function findIdMap(user,code){
     const found=list.find(g=>g.description===`notes-id-map-${code}`);
     if(found){
       const data=await fetchMapData(found.id);
-      if(data&&data[code]){
-        localStorage.setItem('smgid_'+user+'/'+code,found.id);
-        return{...data[code],mapGistId:found.id};
-      }
+      if(data&&data[code]){localStorage.setItem('smgid_'+user+'/'+code,found.id);return{...data[code],mapGistId:found.id};}
     }
   }
   return null;
@@ -537,14 +585,17 @@ async function fetchMapData(mgid){
   }catch{return null;}
 }
 
-// ── 토큰 등록 ─────────────────────────────────────
+// ── 토큰 등록 (AES 암호화) ────────────────────────
 document.getElementById('token-reg-btn').onclick=async()=>{
   const val=document.getElementById('token-input').value.trim();
   const customCode=document.getElementById('custom-code-input').value.trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+  const pw=document.getElementById('reg-pw-input').value;
+  const pwConfirm=document.getElementById('reg-pw-confirm').value;
   if(!val){toast('토큰을 입력하세요.');return;}
+  if(!pw||pw.length<4){showErr('reg-err','비밀번호를 4자 이상 입력하세요.');return;}
+  if(pw!==pwConfirm){showErr('reg-err','비밀번호가 일치하지 않습니다.');return;}
   const btn=document.getElementById('token-reg-btn');
-  btn.textContent='등록 중...';btn.disabled=true;
-  document.getElementById('token-err').style.display='none';
+  btn.textContent='등록 중...';btn.disabled=true;hideErr('reg-err');
   try{
     const ur=await fetch('https://api.github.com/user',{headers:{Authorization:`token ${val}`}});
     if(!ur.ok)throw new Error('invalid_token');
@@ -553,34 +604,33 @@ document.getElementById('token-reg-btn').onclick=async()=>{
     if(!repoOwner){repoOwner=u.login;document.getElementById('repo-owner-in').value=repoOwner;}
     const code=customCode||makeCode();
     myId=`${ghUser}/${code}`;
-
     // 기존 notes Gist 찾기
     const gr=await fetch('https://api.github.com/gists?per_page=100',{headers:{Authorization:`token ${val}`}});
     if(gr.ok){
       const list=await gr.json();
       const found=list.find(g=>g.files&&g.files['notes.json']&&g.description==='Notes App Backup');
-      if(found){gistId=found.id;}
+      if(found)gistId=found.id;
       const mapFound=list.find(g=>g.description===`notes-id-map-${code}`);
       if(mapFound)idMapGistId=mapFound.id;
     }
-
-    await saveIdMapGist(val,ghUser,code);
+    // AES-256으로 토큰 암호화 후 Gist 저장
+    btn.textContent='암호화 중...';
+    const enc=await aesEncrypt(val,pw);
+    await saveIdMapGist(val,ghUser,code,enc);
     saveLocalAuth();
     setAvatar(u.avatar_url);
-
     document.getElementById('login-screen').style.display='none';
     document.getElementById('issued-id').textContent=myId;
     document.getElementById('issued-screen').style.display='flex';
   }catch(e){
-    if(e.message==='invalid_token')document.getElementById('token-err').style.display='block';
-    else toast('등록 오류: '+e.message);
+    if(e.message==='invalid_token')showErr('reg-err','토큰이 올바르지 않습니다.');
+    else showErr('reg-err','오류: '+e.message);
     btn.textContent='등록';btn.disabled=false;
   }
 };
 
-async function saveIdMapGist(tok,user,code){
-  const enc=encTok(tok,code);
-  const payload={[code]:{enc,gistId:gistId||''}};
+async function saveIdMapGist(tok,user,code,enc){
+  const payload={[code]:{enc,gistId:gistId||'',v:'aes256'}};
   const fname=`notes-id-map-${code}.json`;
   const content=JSON.stringify(payload,null,2);
   if(idMapGistId){
@@ -589,7 +639,6 @@ async function saveIdMapGist(tok,user,code){
       return;
     }catch{}
   }
-  // 신규 생성 (공개 — description으로 검색 가능해야 함)
   const r=await fetch('https://api.github.com/gists',{method:'POST',headers:{Authorization:`token ${tok}`,'Content-Type':'application/json'},body:JSON.stringify({description:`notes-id-map-${code}`,public:true,files:{[fname]:{content}}})});
   const d=await r.json();idMapGistId=d.id;
 }
@@ -619,6 +668,9 @@ async function patchMapGistId(){
 
 document.getElementById('copy-issued-id-btn').onclick=()=>{navigator.clipboard.writeText(document.getElementById('issued-id').textContent).then(()=>toast('ID 복사됨!'));};
 document.getElementById('proceed-btn').onclick=()=>{document.getElementById('issued-screen').style.display='none';boot();};
+
+function showErr(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='block';}
+function hideErr(id){document.getElementById(id).style.display='none';}
 
 // ── 부트 ──────────────────────────────────────────
 async function boot(){
@@ -674,29 +726,37 @@ document.getElementById('logout-btn').onclick=()=>{
   token='';gistId='';myId='';ghUser='';idMapGistId='';notes=[];
   document.getElementById('app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
+  document.getElementById('login-pw-input').value='';
 };
 function setSS(s){document.getElementById('sync-status').textContent=s;}
 
-// ── 노트 공유 (링크 공유) ─────────────────────────
+// ── 설정 ──────────────────────────────────────────
+document.getElementById('settings-btn').onclick=()=>{document.getElementById('my-id-val').textContent=myId;openModal('settings-modal');};
+document.getElementById('font-sel').onchange=e=>{document.getElementById('md-ed').style.fontFamily=e.target.value;document.getElementById('preview').style.fontFamily=e.target.value;localStorage.setItem('s-font',e.target.value);};
+document.getElementById('font-size-range').oninput=e=>{const v=e.target.value;document.getElementById('md-ed').style.fontSize=v+'px';document.getElementById('preview').style.fontSize=v+'px';document.getElementById('fs-val').textContent=v;localStorage.setItem('s-fs',v);};
+document.getElementById('save-repo-btn').onclick=()=>{const o=document.getElementById('repo-owner-in').value.trim();const n=document.getElementById('repo-name-in').value.trim();if(!o||!n){toast('저장소 정보를 입력하세요.');return;}repoOwner=o;repoName=n;localStorage.setItem(RK,JSON.stringify({owner:o,name:n}));toast('저장소 설정 완료!');};
+
+// ── 모달 ──────────────────────────────────────────
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+// ── 노트 공유 ─────────────────────────────────────
 document.getElementById('share-note-btn').onclick=()=>{
   if(!cur){toast('공유할 노트를 먼저 선택하세요.');return;}
   if(!gistId){toast('먼저 Gist 저장을 해주세요.');return;}
   const url=`${location.origin}${location.pathname}?gid=${gistId}&nid=${cur}`;
   navigator.clipboard.writeText(url).then(()=>toast('🔗 링크가 복사됐습니다!'));
 };
-
 document.getElementById('share-copy-link').onclick=()=>{
   const params=new URLSearchParams(location.search);
   const url=`${location.origin}${location.pathname}?gid=${params.get('gid')}&nid=${params.get('nid')}`;
   navigator.clipboard.writeText(url).then(()=>toast('링크 복사됨!'));
 };
-
 document.getElementById('share-back').onclick=()=>{
   history.pushState({},'',location.pathname);
   document.getElementById('share-view').style.display='none';
   document.getElementById('app').style.display='flex';
 };
-
 async function loadSharedNote(gid,nid){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='none';
@@ -712,20 +772,8 @@ async function loadSharedNote(gid,nid){
     if(!note)throw new Error('노트를 찾을 수 없습니다.');
     document.getElementById('share-title').textContent=note.title||'제목 없음';
     document.getElementById('share-content').innerHTML=parseMd(note.body);
-  }catch(e){
-    document.getElementById('share-content').innerHTML=`<p style="padding:20px;color:#dc2626;">오류: ${e.message}</p>`;
-  }
+  }catch(e){document.getElementById('share-content').innerHTML=`<p style="padding:20px;color:#dc2626;">오류: ${e.message}</p>`;}
 }
-
-// ── 설정 ──────────────────────────────────────────
-document.getElementById('settings-btn').onclick=()=>{document.getElementById('my-id-val').textContent=myId;openModal('settings-modal');};
-document.getElementById('font-sel').onchange=e=>{document.getElementById('md-ed').style.fontFamily=e.target.value;document.getElementById('preview').style.fontFamily=e.target.value;localStorage.setItem('s-font',e.target.value);};
-document.getElementById('font-size-range').oninput=e=>{const v=e.target.value;document.getElementById('md-ed').style.fontSize=v+'px';document.getElementById('preview').style.fontSize=v+'px';document.getElementById('fs-val').textContent=v;localStorage.setItem('s-fs',v);};
-document.getElementById('save-repo-btn').onclick=()=>{const o=document.getElementById('repo-owner-in').value.trim();const n=document.getElementById('repo-name-in').value.trim();if(!o||!n){toast('저장소 정보를 입력하세요.');return;}repoOwner=o;repoName=n;localStorage.setItem(RK,JSON.stringify({owner:o,name:n}));toast('저장소 설정 완료!');};
-
-// ── 모달 ──────────────────────────────────────────
-function openModal(id){document.getElementById(id).classList.add('open');}
-function closeModal(id){document.getElementById(id).classList.remove('open');}
 
 // ── 업로드 진행률 ─────────────────────────────────
 function showProgress(name,pct){const w=document.getElementById('upload-progress-wrap');w.classList.add('show');document.getElementById('upload-progress-title').textContent=`업로드 중: ${name}`;document.getElementById('upload-progress-bar').style.width=pct+'%';document.getElementById('upload-progress-pct').textContent=Math.round(pct)+'%';}
@@ -786,30 +834,18 @@ uploadInput.onchange=async e=>{await handleUpload([...e.target.files]);e.target.
 async function handleUpload(files){if(!files.length)return;let ok=0;for(const f of files){const r=await uploadFileToRepo(f);if(r)ok++;}if(ok>0){toast(`${ok}개 업로드 완료!`);await refreshFileList();}}
 document.getElementById('attach-file').onchange=async e=>{const files=[...e.target.files];if(!files.length)return;for(const f of files){const r=await uploadFileToRepo(f);if(r){if(isImg(f.name))ins(`\n![${f.name}](${r.url})\n`);else ins(`[${f.name}](${r.url})`);}}e.target.value='';toast('첨부 완료!');};
 
-// ── 표 붙여넣기 변환 ──────────────────────────────
+// ── 표 붙여넣기 ───────────────────────────────────
 function htmlTableToMd(html){
   const tmp=document.createElement('div');tmp.innerHTML=html;
   const table=tmp.querySelector('table');if(!table)return null;
   const rows=[...table.querySelectorAll('tr')];if(!rows.length)return null;
-  const mdRows=rows.map(row=>{
-    const cells=[...row.querySelectorAll('th,td')];
-    return'| '+cells.map(c=>c.innerText.replace(/\n/g,' ').replace(/\|/g,'\\|').trim()).join(' | ')+' |';
-  });
-  const header=mdRows[0];
-  const sep='| '+header.split('|').slice(1,-1).map(()=>'---').join(' | ')+' |';
-  return[header,sep,...mdRows.slice(1)].join('\n');
+  const mdRows=rows.map(row=>{const cells=[...row.querySelectorAll('th,td')];return'| '+cells.map(c=>c.innerText.replace(/\n/g,' ').replace(/\|/g,'\\|').trim()).join(' | ')+' |';});
+  const sep='| '+mdRows[0].split('|').slice(1,-1).map(()=>'---').join(' | ')+' |';
+  return[mdRows[0],sep,...mdRows.slice(1)].join('\n');
 }
-
 document.getElementById('md-ed').addEventListener('paste',e=>{
   const html=e.clipboardData.getData('text/html');
-  if(html&&html.includes('<table')){
-    const md=htmlTableToMd(html);
-    if(md){
-      e.preventDefault();
-      ins('\n'+md+'\n');
-      toast('표를 마크다운으로 변환했습니다.');
-    }
-  }
+  if(html&&html.includes('<table')){const md=htmlTableToMd(html);if(md){e.preventDefault();ins('\n'+md+'\n');toast('표를 마크다운으로 변환했습니다.');}}
 });
 
 // ── 폴더 ──────────────────────────────────────────
@@ -836,7 +872,7 @@ window.restoreNote=function(i){notes.unshift(trash[i]);trash.splice(i,1);saveL()
 
 // ── 노트 ──────────────────────────────────────────
 function genId(){return 'n'+Date.now()+Math.random().toString(36).slice(2);}
-function defNotes(){return [{id:'demo1',title:'환영합니다! 📝',body:'# Notes 앱\n\n**ID 형식:** `GitHub아이디/코드` (예: hyeonji/abc123)\n\n- [x] ID 하나로 모든 기기 로그인\n- [x] 표 붙여넣기 자동 변환\n- [x] 노트 링크 공유 (🔗 버튼)\n- [x] 파일 업로드\n- [ ] 나만의 노트 작성\n\n> 설정(⚙)에서 내 ID 확인 및 복사 가능',folder:'all',tags:['가이드'],created:Date.now(),favorite:false}];}
+function defNotes(){return [{id:'demo1',title:'환영합니다! 📝',body:'# Notes 앱\n\n🔒 **AES-256 암호화**로 토큰을 안전하게 보호합니다.\n\n**로그인 방법:** ID + 비밀번호\n- ID 형식: `GitHub아이디/코드` (예: hyeonji/abc123)\n- 비밀번호를 모르면 누구도 복호화 불가\n\n- [x] AES-256 암호화 보안\n- [x] ID + 비밀번호 로그인\n- [x] 표 붙여넣기 자동 변환\n- [x] 노트 링크 공유\n- [ ] 나만의 노트 작성',folder:'all',tags:['가이드'],created:Date.now(),favorite:false}];}
 function saveL(){localStorage.setItem(LK,JSON.stringify(notes));}
 function filtered(){return notes.filter(n=>{if(afolder==='fav')return n.favorite;if(afolder!=='all'&&n.folder!==afolder)return false;if(atag&&!(n.tags||[]).includes(atag))return false;if(sq){const q=sq.toLowerCase();if(!n.title.toLowerCase().includes(q)&&!n.body.toLowerCase().includes(q))return false;}return true;}).sort((a,b)=>b.created-a.created);}
 function allTags(){const t=new Set();notes.forEach(n=>(n.tags||[]).forEach(g=>t.add(g)));return[...t];}
