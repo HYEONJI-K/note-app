@@ -12,8 +12,6 @@ body.light-green{--bg:#f0f4f0;--surface:#fff;--surface2:#e4ede4;--surface0:#d6e8
 body.dark{--bg:#1a1a1a;--surface:#2a2a2a;--surface2:#3a3a3a;--surface0:#333;--border:rgba(255,255,255,0.12);--text:#e4e4e4;--text2:#b0b0b0;--accent:#4a9eff;--accent-bg:#1e3a5f;--danger:#ff6b6b;}
 html,body{height:100%;overflow:hidden;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;color:var(--text);background:var(--bg);display:flex;flex-direction:column;}
-
-/* 로그인 */
 #login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:16px;padding:24px;overflow-y:auto;}
 #login-screen h1{font-size:24px;font-weight:500;}
 .lcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:10px;}
@@ -35,9 +33,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .id-box .ival{font-size:18px;font-weight:700;letter-spacing:2px;color:var(--accent);font-family:'Courier New',monospace;word-break:break-all;}
 .id-box .isub{font-size:11px;color:var(--text2);margin-top:4px;}
 .lnote{font-size:11px;color:var(--text2);background:var(--surface2);border-radius:8px;padding:8px 10px;line-height:1.6;}
-.pw-strength{height:4px;border-radius:2px;margin-top:2px;transition:width .3s,background .3s;width:0%;}
-
-/* 앱 */
 #app{display:none;flex-direction:column;flex:1;min-height:0;}
 #topbar{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
 #menu-btn{display:none;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:transparent;cursor:pointer;font-size:17px;color:var(--text);flex-shrink:0;}
@@ -127,7 +122,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .cb-wrap{position:relative;}
 .copy-btn{position:absolute;top:5px;right:5px;padding:2px 7px;font-size:11px;border:1px solid var(--border);border-radius:3px;background:var(--surface);color:var(--text2);cursor:pointer;}
 #preview img{max-width:100%;border-radius:6px;margin:4px 0;display:block;}
-#preview a{color:var(--accent);}
+#preview a{color:var(--accent);text-decoration:underline;}
 #footer{padding:5px 12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:7px;background:var(--surface);flex-shrink:0;}
 #tag-wrap{display:flex;flex-wrap:wrap;align-items:center;gap:3px;flex:1;min-width:0;position:relative;}
 .ftag{display:flex;align-items:center;gap:2px;font-size:11px;padding:2px 6px;border-radius:20px;background:var(--accent-bg);color:var(--accent);}
@@ -182,22 +177,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 #share-content img{max-width:100%;border-radius:6px;margin:4px 0;display:block;}
 #share-content blockquote{border-left:3px solid var(--accent);padding-left:10px;color:var(--text2);margin-bottom:7px;}
 #share-content strong{font-weight:600;}
-#share-content a{color:var(--accent);}
+#share-content a{color:var(--accent);text-decoration:underline;}
+/* 링크 삽입 모달 */
+#link-modal .modal-box{max-width:360px;}
 #toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);border-radius:7px;padding:7px 14px;font-size:13px;pointer-events:none;opacity:0;transition:opacity .3s;z-index:400;white-space:nowrap;}
 </style>
 </head>
 <body class="light">
 
-<!-- 로그인 화면 -->
 <div id="login-screen">
   <h1>📝 Notes</h1>
   <div class="lcard">
     <h2>🔑 ID + 비밀번호로 로그인</h2>
     <input class="linput" id="id-input" placeholder="예: hyeonji/abc123" autocomplete="off" spellcheck="false"/>
     <input class="linput" id="login-pw-input" type="password" placeholder="비밀번호"/>
-    <div class="lrow" style="gap:6px;">
-      <button class="lbtn" id="id-login-btn" style="width:100%;">로그인</button>
-    </div>
+    <button class="lbtn" id="id-login-btn" style="width:100%;">로그인</button>
     <div class="lerr" id="id-err">ID 또는 비밀번호가 올바르지 않습니다.</div>
     <div class="lhint">형식: GitHub아이디/코드 · 비밀번호는 등록 시 설정한 것</div>
   </div>
@@ -209,11 +203,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
       <input id="custom-code-input" placeholder="코드 (선택, 영문숫자)" maxlength="8" autocomplete="off" spellcheck="false"/>
       <button class="lbtn sec" id="gen-code-btn">🎲</button>
     </div>
-    <input class="linput" id="reg-pw-input" type="password" placeholder="비밀번호 설정 (필수, 8자 이상 권장)"/>
-    <div style="background:var(--surface2);border-radius:4px;overflow:hidden;height:4px;">
-      <div class="pw-strength" id="pw-strength-bar"></div>
-    </div>
-    <div style="font-size:11px;color:var(--text2);" id="pw-strength-label"></div>
+    <input class="linput" id="reg-pw-input" type="password" placeholder="비밀번호 설정 (필수, 4자 이상)"/>
+    <div style="background:var(--surface2);border-radius:4px;overflow:hidden;height:4px;"><div id="pw-strength-bar" style="height:100%;border-radius:4px;width:0%;transition:width .3s,background .3s;"></div></div>
+    <div id="pw-strength-label" style="font-size:11px;color:var(--text2);"></div>
     <input class="linput" id="reg-pw-confirm" type="password" placeholder="비밀번호 확인"/>
     <div class="lerr" id="reg-err"></div>
     <button class="lbtn" id="token-reg-btn" style="width:100%;">등록</button>
@@ -221,7 +213,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
   </div>
 </div>
 
-<!-- 등록 완료 -->
 <div id="issued-screen" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:16px;padding:24px;">
   <h1>📝 Notes</h1>
   <div class="lcard">
@@ -231,18 +222,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
       <div class="ival" id="issued-id">-</div>
       <div class="isub">다른 기기에서 ID + 비밀번호로 로그인하세요</div>
     </div>
-    <div class="lnote">
-      🔒 <b>보안 방식:</b> 토큰이 AES-256으로 암호화되어 저장됩니다.<br>
-      비밀번호를 모르면 누구도 토큰을 복원할 수 없습니다.<br><br>
-      ⚠️ ID와 비밀번호를 안전한 곳에 보관하세요.<br>
-      비밀번호 분실 시 토큰으로 재등록해야 합니다.
-    </div>
+    <div class="lnote">🔒 토큰이 AES-256으로 암호화되어 저장됩니다.<br>비밀번호를 모르면 누구도 복원할 수 없습니다.<br><br>⚠️ ID와 비밀번호를 안전한 곳에 보관하세요.</div>
     <button class="lbtn sec" id="copy-issued-id-btn" style="width:100%;">📋 ID 복사</button>
     <button class="lbtn" id="proceed-btn" style="width:100%;">시작하기 →</button>
   </div>
 </div>
 
-<!-- 앱 -->
 <div id="app">
   <div id="topbar">
     <button id="menu-btn">☰</button>
@@ -306,6 +291,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
         <button class="tb" data-a="hr">—</button>
         <span class="tsep"></span>
         <button class="tb" data-a="table">표</button>
+        <button class="tb" data-a="link">🔗</button>
         <button class="tb" data-a="attach">📎</button>
         <input type="file" id="attach-file" style="display:none" multiple/>
       </div>
@@ -323,7 +309,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
   </div>
 </div>
 
-<!-- 노트 공유 뷰 -->
 <div id="share-view">
   <div id="share-header">
     <div id="share-title">노트</div>
@@ -333,11 +318,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
   <div id="share-content"></div>
 </div>
 
-<!-- 업로드 진행률 -->
 <div id="upload-progress-wrap">
   <div id="upload-progress-title">업로드 중...</div>
   <div id="upload-progress-bar-wrap"><div id="upload-progress-bar"></div></div>
   <div id="upload-progress-pct">0%</div>
+</div>
+
+<!-- 링크 삽입 모달 -->
+<div id="link-modal" class="modal">
+  <div class="modal-box">
+    <h2>🔗 링크 삽입</h2>
+    <div style="font-size:12px;color:var(--text2);">링크 제목 (표시될 텍스트)</div>
+    <input type="text" id="link-title-in" placeholder="예: 구글" autocomplete="off"/>
+    <div style="font-size:12px;color:var(--text2);">URL</div>
+    <input type="text" id="link-url-in" placeholder="https://..." autocomplete="off"/>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('link-modal')">취소</button>
+      <button class="btn-ok" id="link-ok-btn">삽입</button>
+    </div>
+  </div>
 </div>
 
 <!-- 새 폴더 모달 -->
@@ -423,63 +422,43 @@ let token='',gistId='',myId='',ghUser='',idMapGistId='';
 let notes=[],folders=[],trash=[],cur=null,afolder='all',atag=null,sq='',editMode=true;
 let repoOwner='',repoName='';
 
-// ── AES-256-GCM 암호화 (Web Crypto API) ──────────
-async function deriveKey(password,salt){
-  const enc=new TextEncoder();
-  const keyMaterial=await crypto.subtle.importKey('raw',enc.encode(password),{name:'PBKDF2'},false,['deriveKey']);
-  return crypto.subtle.deriveKey(
-    {name:'PBKDF2',salt,iterations:200000,hash:'SHA-256'},
-    keyMaterial,{name:'AES-GCM',length:256},false,['encrypt','decrypt']
-  );
+// ── AES-256-GCM ───────────────────────────────────
+async function deriveKey(pw,salt){
+  const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),{name:'PBKDF2'},false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:200000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
 }
-
-async function aesEncrypt(plaintext,password){
+async function aesEncrypt(plain,pw){
   const salt=crypto.getRandomValues(new Uint8Array(16));
   const iv=crypto.getRandomValues(new Uint8Array(12));
-  const key=await deriveKey(password,salt);
-  const enc=new TextEncoder();
-  const ciphertext=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,enc.encode(plaintext));
-  // salt(16) + iv(12) + ciphertext를 base64로
-  const combined=new Uint8Array(16+12+ciphertext.byteLength);
-  combined.set(salt,0);combined.set(iv,16);combined.set(new Uint8Array(ciphertext),28);
-  return btoa(String.fromCharCode(...combined));
+  const key=await deriveKey(pw,salt);
+  const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(plain));
+  const buf=new Uint8Array(28+ct.byteLength);buf.set(salt,0);buf.set(iv,16);buf.set(new Uint8Array(ct),28);
+  return btoa(String.fromCharCode(...buf));
 }
-
-async function aesDecrypt(b64,password){
+async function aesDecrypt(b64,pw){
   try{
-    const combined=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
-    const salt=combined.slice(0,16);
-    const iv=combined.slice(16,28);
-    const ciphertext=combined.slice(28);
-    const key=await deriveKey(password,salt);
-    const decrypted=await crypto.subtle.decrypt({name:'AES-GCM',iv},key,ciphertext);
-    return new TextDecoder().decode(decrypted);
+    const buf=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
+    const key=await deriveKey(pw,buf.slice(0,16));
+    const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:buf.slice(16,28)},key,buf.slice(28));
+    return new TextDecoder().decode(pt);
   }catch{return null;}
 }
 
-// ── ID 형식: "githubUsername/code" ───────────────
+// ── ID 유틸 ──────────────────────────────────────
 function makeCode(){const c='abcdefghijklmnopqrstuvwxyz0123456789';let s='';for(let i=0;i<6;i++)s+=c[Math.floor(Math.random()*c.length)];return s;}
 function parseId(id){const p=id.trim().split('/');return p.length===2?{user:p[0].trim().toLowerCase(),code:p[1].trim().toLowerCase()}:null;}
 
 // ── 비밀번호 강도 ─────────────────────────────────
 function checkPwStrength(pw){
-  let score=0;
-  if(pw.length>=8)score++;if(pw.length>=12)score++;
-  if(/[A-Z]/.test(pw))score++;if(/[0-9]/.test(pw))score++;if(/[^A-Za-z0-9]/.test(pw))score++;
-  const bar=document.getElementById('pw-strength-bar');
-  const label=document.getElementById('pw-strength-label');
-  const levels=[
-    {w:'0%',bg:'transparent',text:''},
-    {w:'25%',bg:'#dc2626',text:'매우 약함'},
-    {w:'50%',bg:'#f97316',text:'약함'},
-    {w:'75%',bg:'#eab308',text:'보통'},
-    {w:'90%',bg:'#22c55e',text:'강함'},
-    {w:'100%',bg:'#16a34a',text:'매우 강함'},
-  ];
-  const lv=Math.min(score,5);
-  bar.style.width=levels[lv].w;bar.style.background=levels[lv].bg;
-  label.textContent=pw.length>0?levels[lv].text:'';
-  label.style.color=levels[lv].bg;
+  let sc=0;
+  if(pw.length>=8)sc++;if(pw.length>=12)sc++;
+  if(/[A-Z]/.test(pw))sc++;if(/[0-9]/.test(pw))sc++;if(/[^A-Za-z0-9]/.test(pw))sc++;
+  const lv=Math.min(sc,5);
+  const cols=['transparent','#dc2626','#f97316','#eab308','#22c55e','#16a34a'];
+  const labs=['','매우 약함','약함','보통','강함','매우 강함'];
+  const pcts=['0%','25%','50%','75%','90%','100%'];
+  document.getElementById('pw-strength-bar').style.cssText=`width:${pcts[lv]};background:${cols[lv]};`;
+  const el=document.getElementById('pw-strength-label');el.textContent=pw.length>0?labs[lv]:'';el.style.color=cols[lv];
 }
 document.getElementById('reg-pw-input').oninput=e=>checkPwStrength(e.target.value);
 
@@ -496,11 +475,9 @@ window.onload=()=>{
   repoOwner=repo.owner||'';repoName=repo.name||'';
   applySettings();
   document.getElementById('custom-code-input').value=makeCode();
-  // URL 공유 파라미터
   const params=new URLSearchParams(location.search);
   const shareGid=params.get('gid'),shareNid=params.get('nid');
   if(shareGid&&shareNid){loadSharedNote(shareGid,shareNid);return;}
-  // 자동 로그인 (이 기기에 세션 저장된 경우)
   const sid=localStorage.getItem('sid');
   const stok=sid?localStorage.getItem('stok_'+sid):'';
   if(sid&&stok){
@@ -521,104 +498,66 @@ function applySettings(){
   document.getElementById('font-size-range').value=fs;document.getElementById('fs-val').textContent=fs;
   document.getElementById('repo-owner-in').value=repoOwner;document.getElementById('repo-name-in').value=repoName;
 }
-
 document.getElementById('gen-code-btn').onclick=()=>{document.getElementById('custom-code-input').value=makeCode();};
 
-// ── ID 로그인 (ID + 비밀번호) ─────────────────────
+// ── 로그인 ────────────────────────────────────────
 document.getElementById('id-login-btn').onclick=async()=>{
   const raw=document.getElementById('id-input').value.trim();
   const pw=document.getElementById('login-pw-input').value;
   const parsed=parseId(raw);
-  if(!parsed||!parsed.user||!parsed.code){
-    showErr('id-err','형식이 올바르지 않습니다. 예: hyeonji/abc123');return;
-  }
+  if(!parsed){showErr('id-err','형식이 올바르지 않습니다. 예: hyeonji/abc123');return;}
   if(!pw){showErr('id-err','비밀번호를 입력하세요.');return;}
-  const btn=document.getElementById('id-login-btn');
-  btn.textContent='검색 중...';btn.disabled=true;
-  hideErr('id-err');
+  const btn=document.getElementById('id-login-btn');btn.textContent='검색 중...';btn.disabled=true;hideErr('id-err');
   try{
     const result=await findIdMap(parsed.user,parsed.code);
-    if(!result){showErr('id-err','ID를 찾을 수 없습니다. GitHub 아이디와 코드를 확인하세요.');btn.textContent='로그인';btn.disabled=false;return;}
-    // AES 복호화 (비밀번호 틀리면 null 반환)
-    const decrypted=await aesDecrypt(result.enc,pw);
-    if(!decrypted){showErr('id-err','비밀번호가 올바르지 않습니다.');btn.textContent='로그인';btn.disabled=false;return;}
-    token=decrypted;myId=raw.toLowerCase();ghUser=parsed.user;
+    if(!result){showErr('id-err','ID를 찾을 수 없습니다.');btn.textContent='로그인';btn.disabled=false;return;}
+    const dec=await aesDecrypt(result.enc,pw);
+    if(!dec){showErr('id-err','비밀번호가 올바르지 않습니다.');btn.textContent='로그인';btn.disabled=false;return;}
+    token=dec;myId=raw.toLowerCase();ghUser=parsed.user;
     gistId=result.gistId||'';idMapGistId=result.mapGistId;
     saveLocalAuth();boot();
-  }catch(e){
-    showErr('id-err','오류: '+e.message);btn.textContent='로그인';btn.disabled=false;
-  }
+  }catch(e){showErr('id-err','오류: '+e.message);btn.textContent='로그인';btn.disabled=false;}
 };
-
-// Enter 키 로그인
 document.getElementById('login-pw-input').onkeydown=e=>{if(e.key==='Enter')document.getElementById('id-login-btn').click();};
 
-// ── GitHub 사용자 Gist 목록에서 ID 맵 찾기 ────────
 async function findIdMap(user,code){
-  const cachedMgid=localStorage.getItem('smgid_'+user+'/'+code);
-  if(cachedMgid){
-    const data=await fetchMapData(cachedMgid);
-    if(data&&data[code])return{...data[code],mapGistId:cachedMgid};
-  }
+  const cached=localStorage.getItem('smgid_'+user+'/'+code);
+  if(cached){const d=await fetchMapData(cached);if(d&&d[code])return{...d[code],mapGistId:cached};}
   for(let page=1;page<=5;page++){
     const r=await fetch(`https://api.github.com/users/${user}/gists?per_page=30&page=${page}`);
-    if(!r.ok)break;
-    const list=await r.json();
-    if(!list.length)break;
+    if(!r.ok)break;const list=await r.json();if(!list.length)break;
     const found=list.find(g=>g.description===`notes-id-map-${code}`);
-    if(found){
-      const data=await fetchMapData(found.id);
-      if(data&&data[code]){localStorage.setItem('smgid_'+user+'/'+code,found.id);return{...data[code],mapGistId:found.id};}
-    }
+    if(found){const d=await fetchMapData(found.id);if(d&&d[code]){localStorage.setItem('smgid_'+user+'/'+code,found.id);return{...d[code],mapGistId:found.id};}}
   }
   return null;
 }
-
 async function fetchMapData(mgid){
-  try{
-    const r=await fetch(`https://api.github.com/gists/${mgid}`);
-    if(!r.ok)return null;
-    const d=await r.json();
-    const fname=Object.keys(d.files).find(k=>k.startsWith('notes-id-map'));
-    if(!fname)return null;
-    return JSON.parse(d.files[fname].content);
-  }catch{return null;}
+  try{const r=await fetch(`https://api.github.com/gists/${mgid}`);if(!r.ok)return null;const d=await r.json();const fn=Object.keys(d.files).find(k=>k.startsWith('notes-id-map'));return fn?JSON.parse(d.files[fn].content):null;}catch{return null;}
 }
 
-// ── 토큰 등록 (AES 암호화) ────────────────────────
+// ── 등록 ──────────────────────────────────────────
 document.getElementById('token-reg-btn').onclick=async()=>{
   const val=document.getElementById('token-input').value.trim();
-  const customCode=document.getElementById('custom-code-input').value.trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+  const cc=document.getElementById('custom-code-input').value.trim().toLowerCase().replace(/[^a-z0-9]/g,'');
   const pw=document.getElementById('reg-pw-input').value;
-  const pwConfirm=document.getElementById('reg-pw-confirm').value;
+  const pwc=document.getElementById('reg-pw-confirm').value;
   if(!val){toast('토큰을 입력하세요.');return;}
   if(!pw||pw.length<4){showErr('reg-err','비밀번호를 4자 이상 입력하세요.');return;}
-  if(pw!==pwConfirm){showErr('reg-err','비밀번호가 일치하지 않습니다.');return;}
-  const btn=document.getElementById('token-reg-btn');
-  btn.textContent='등록 중...';btn.disabled=true;hideErr('reg-err');
+  if(pw!==pwc){showErr('reg-err','비밀번호가 일치하지 않습니다.');return;}
+  const btn=document.getElementById('token-reg-btn');btn.textContent='등록 중...';btn.disabled=true;hideErr('reg-err');
   try{
     const ur=await fetch('https://api.github.com/user',{headers:{Authorization:`token ${val}`}});
     if(!ur.ok)throw new Error('invalid_token');
     const u=await ur.json();
     ghUser=u.login;token=val;
     if(!repoOwner){repoOwner=u.login;document.getElementById('repo-owner-in').value=repoOwner;}
-    const code=customCode||makeCode();
-    myId=`${ghUser}/${code}`;
-    // 기존 notes Gist 찾기
+    const code=cc||makeCode();myId=`${ghUser}/${code}`;
     const gr=await fetch('https://api.github.com/gists?per_page=100',{headers:{Authorization:`token ${val}`}});
-    if(gr.ok){
-      const list=await gr.json();
-      const found=list.find(g=>g.files&&g.files['notes.json']&&g.description==='Notes App Backup');
-      if(found)gistId=found.id;
-      const mapFound=list.find(g=>g.description===`notes-id-map-${code}`);
-      if(mapFound)idMapGistId=mapFound.id;
-    }
-    // AES-256으로 토큰 암호화 후 Gist 저장
+    if(gr.ok){const list=await gr.json();const f=list.find(g=>g.files&&g.files['notes.json']&&g.description==='Notes App Backup');if(f)gistId=f.id;const mf=list.find(g=>g.description===`notes-id-map-${code}`);if(mf)idMapGistId=mf.id;}
     btn.textContent='암호화 중...';
     const enc=await aesEncrypt(val,pw);
     await saveIdMapGist(val,ghUser,code,enc);
-    saveLocalAuth();
-    setAvatar(u.avatar_url);
+    saveLocalAuth();setAvatar(u.avatar_url);
     document.getElementById('login-screen').style.display='none';
     document.getElementById('issued-id').textContent=myId;
     document.getElementById('issued-screen').style.display='flex';
@@ -628,47 +567,29 @@ document.getElementById('token-reg-btn').onclick=async()=>{
     btn.textContent='등록';btn.disabled=false;
   }
 };
-
 async function saveIdMapGist(tok,user,code,enc){
   const payload={[code]:{enc,gistId:gistId||'',v:'aes256'}};
-  const fname=`notes-id-map-${code}.json`;
-  const content=JSON.stringify(payload,null,2);
-  if(idMapGistId){
-    try{
-      await fetch(`https://api.github.com/gists/${idMapGistId}`,{method:'PATCH',headers:{Authorization:`token ${tok}`,'Content-Type':'application/json'},body:JSON.stringify({files:{[fname]:{content}}})});
-      return;
-    }catch{}
-  }
+  const fname=`notes-id-map-${code}.json`;const content=JSON.stringify(payload,null,2);
+  if(idMapGistId){try{await fetch(`https://api.github.com/gists/${idMapGistId}`,{method:'PATCH',headers:{Authorization:`token ${tok}`,'Content-Type':'application/json'},body:JSON.stringify({files:{[fname]:{content}}})});return;}catch{}}
   const r=await fetch('https://api.github.com/gists',{method:'POST',headers:{Authorization:`token ${tok}`,'Content-Type':'application/json'},body:JSON.stringify({description:`notes-id-map-${code}`,public:true,files:{[fname]:{content}}})});
   const d=await r.json();idMapGistId=d.id;
 }
-
 function saveLocalAuth(){
-  localStorage.setItem('sid',myId);
-  localStorage.setItem('stok_'+myId,token);
-  if(gistId)localStorage.setItem('sgid',gistId);
-  if(idMapGistId)localStorage.setItem('smgid_'+myId,idMapGistId);
+  localStorage.setItem('sid',myId);localStorage.setItem('stok_'+myId,token);
+  if(gistId)localStorage.setItem('sgid',gistId);if(idMapGistId)localStorage.setItem('smgid_'+myId,idMapGistId);
 }
-
 async function patchMapGistId(){
   if(!idMapGistId||!token||!gistId||!myId)return;
   try{
-    const r=await fetch(`https://api.github.com/gists/${idMapGistId}`,{headers:{Authorization:`token ${token}`}});
-    if(!r.ok)return;
-    const d=await r.json();
-    const fname=Object.keys(d.files).find(k=>k.startsWith('notes-id-map'));
-    if(!fname)return;
-    const parsed=parseId(myId);if(!parsed)return;
-    const data=JSON.parse(d.files[fname].content);
-    if(data[parsed.code]){data[parsed.code].gistId=gistId;
-      await fetch(`https://api.github.com/gists/${idMapGistId}`,{method:'PATCH',headers:{Authorization:`token ${token}`,'Content-Type':'application/json'},body:JSON.stringify({files:{[fname]:{content:JSON.stringify(data,null,2)}}})});
-    }
+    const r=await fetch(`https://api.github.com/gists/${idMapGistId}`,{headers:{Authorization:`token ${token}`}});if(!r.ok)return;
+    const d=await r.json();const fn=Object.keys(d.files).find(k=>k.startsWith('notes-id-map'));if(!fn)return;
+    const p=parseId(myId);if(!p)return;
+    const data=JSON.parse(d.files[fn].content);
+    if(data[p.code]){data[p.code].gistId=gistId;await fetch(`https://api.github.com/gists/${idMapGistId}`,{method:'PATCH',headers:{Authorization:`token ${token}`,'Content-Type':'application/json'},body:JSON.stringify({files:{[fn]:{content:JSON.stringify(data,null,2)}}})});}
   }catch{}
 }
-
-document.getElementById('copy-issued-id-btn').onclick=()=>{navigator.clipboard.writeText(document.getElementById('issued-id').textContent).then(()=>toast('ID 복사됨!'));};
+document.getElementById('copy-issued-id-btn').onclick=()=>navigator.clipboard.writeText(document.getElementById('issued-id').textContent).then(()=>toast('ID 복사됨!'));
 document.getElementById('proceed-btn').onclick=()=>{document.getElementById('issued-screen').style.display='none';boot();};
-
 function showErr(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='block';}
 function hideErr(id){document.getElementById(id).style.display='none';}
 
@@ -679,18 +600,14 @@ async function boot(){
   document.getElementById('issued-screen').style.display='none';
   document.getElementById('app').style.display='flex';
   document.getElementById('my-id-val').textContent=myId;
-  document.getElementById('my-id-box').onclick=()=>{navigator.clipboard.writeText(myId).then(()=>toast('ID 복사됨!'));};
+  document.getElementById('my-id-box').onclick=()=>navigator.clipboard.writeText(myId).then(()=>toast('ID 복사됨!'));
   renderFolders();renderAll();
   if(gistId){await loadGist();}
   else{
     setSS('Gist 검색 중...');
-    try{
-      const r=await fetch('https://api.github.com/gists?per_page=100',{headers:{Authorization:`token ${token}`}});
-      if(r.ok){const list=await r.json();const f=list.find(g=>g.files&&g.files['notes.json']&&g.description==='Notes App Backup');if(f){gistId=f.id;saveLocalAuth();await loadGist();return;}}
-    }catch{}
+    try{const r=await fetch('https://api.github.com/gists?per_page=100',{headers:{Authorization:`token ${token}`}});if(r.ok){const list=await r.json();const f=list.find(g=>g.files&&g.files['notes.json']&&g.description==='Notes App Backup');if(f){gistId=f.id;saveLocalAuth();await loadGist();return;}}}catch{}
     if(!notes.length)notes=defNotes();
-    renderAll();if(notes.length)selNote(notes[0].id);
-    setSS('☁ 저장 버튼으로 첫 동기화');
+    renderAll();if(notes.length)selNote(notes[0].id);setSS('☁ 저장 버튼으로 첫 동기화');
   }
 }
 function setAvatar(url){document.getElementById('gh-avatar').src=url||'';}
@@ -706,7 +623,6 @@ async function loadGist(){
     setSS('✓ 동기화됨');renderFolders();renderAll();if(notes.length)selNote(notes[0].id);
   }catch{setSS('⚠ 오프라인');renderAll();if(notes.length)selNote(notes[0].id);}
 }
-
 async function saveGist(){
   setSS('저장 중...');
   const content=JSON.stringify({version:2,saved:new Date().toISOString(),notes,folders},null,2);
@@ -717,7 +633,6 @@ async function saveGist(){
     setSS('✓ 동기화됨 · '+new Date().toLocaleTimeString());toast('☁ 저장 완료');
   }catch{setSS('⚠ 저장 실패');toast('저장 실패');}
 }
-
 document.getElementById('sync-btn').onclick=saveGist;
 document.getElementById('logout-btn').onclick=()=>{
   if(!confirm('이 기기에서 로그아웃할까요?'))return;
@@ -749,27 +664,19 @@ document.getElementById('share-note-btn').onclick=()=>{
 };
 document.getElementById('share-copy-link').onclick=()=>{
   const params=new URLSearchParams(location.search);
-  const url=`${location.origin}${location.pathname}?gid=${params.get('gid')}&nid=${params.get('nid')}`;
-  navigator.clipboard.writeText(url).then(()=>toast('링크 복사됨!'));
+  navigator.clipboard.writeText(`${location.origin}${location.pathname}?gid=${params.get('gid')}&nid=${params.get('nid')}`).then(()=>toast('링크 복사됨!'));
 };
-document.getElementById('share-back').onclick=()=>{
-  history.pushState({},'',location.pathname);
-  document.getElementById('share-view').style.display='none';
-  document.getElementById('app').style.display='flex';
-};
+document.getElementById('share-back').onclick=()=>{history.pushState({},'',location.pathname);document.getElementById('share-view').style.display='none';document.getElementById('app').style.display='flex';};
 async function loadSharedNote(gid,nid){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='none';
   document.getElementById('share-view').style.display='flex';
   document.getElementById('share-content').innerHTML='<p style="padding:20px;color:#888;">불러오는 중...</p>';
   try{
-    const r=await fetch(`https://api.github.com/gists/${gid}`);
-    if(!r.ok)throw new Error('Gist를 불러올 수 없습니다.');
-    const d=await r.json();const c=d.files['notes.json']?.content;
-    if(!c)throw new Error('노트 데이터가 없습니다.');
+    const r=await fetch(`https://api.github.com/gists/${gid}`);if(!r.ok)throw new Error('Gist를 불러올 수 없습니다.');
+    const d=await r.json();const c=d.files['notes.json']?.content;if(!c)throw new Error('노트 데이터가 없습니다.');
     const p=JSON.parse(c);const arr=Array.isArray(p)?p:(p.notes||[]);
-    const note=arr.find(n=>n.id===nid);
-    if(!note)throw new Error('노트를 찾을 수 없습니다.');
+    const note=arr.find(n=>n.id===nid);if(!note)throw new Error('노트를 찾을 수 없습니다.');
     document.getElementById('share-title').textContent=note.title||'제목 없음';
     document.getElementById('share-content').innerHTML=parseMd(note.body);
   }catch(e){document.getElementById('share-content').innerHTML=`<p style="padding:20px;color:#dc2626;">오류: ${e.message}</p>`;}
@@ -797,10 +704,9 @@ function uploadFileToRepo(file){
       showProgress(file.name,40);
       const xhr=new XMLHttpRequest();
       xhr.open('PUT',`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`);
-      xhr.setRequestHeader('Authorization',`token ${token}`);
-      xhr.setRequestHeader('Content-Type','application/json');
+      xhr.setRequestHeader('Authorization',`token ${token}`);xhr.setRequestHeader('Content-Type','application/json');
       xhr.upload.onprogress=e=>{if(e.lengthComputable)showProgress(file.name,40+(e.loaded/e.total)*60);};
-      xhr.onload=()=>{if(xhr.status>=200&&xhr.status<300){const d=JSON.parse(xhr.responseText);hideProgress();resolve({name:file.name,path,url:d.content.download_url,size:file.size,sha:d.content.sha});}else{hideProgress();try{const err=JSON.parse(xhr.responseText);toast('업로드 실패: '+err.message);}catch{toast('업로드 오류');}resolve(null);}};
+      xhr.onload=()=>{if(xhr.status>=200&&xhr.status<300){const d=JSON.parse(xhr.responseText);hideProgress();resolve({name:file.name,path,url:d.content.download_url,size:file.size,sha:d.content.sha});}else{hideProgress();try{toast('업로드 실패: '+JSON.parse(xhr.responseText).message);}catch{toast('업로드 오류');}resolve(null);}};
       xhr.onerror=()=>{hideProgress();toast('네트워크 오류');resolve(null);};
       xhr.send(JSON.stringify({message:`Upload ${file.name}`,content:base64}));
     };
@@ -808,8 +714,7 @@ function uploadFileToRepo(file){
     reader.readAsDataURL(file);
   });
 }
-
-async function listRepoFiles(){if(!repoOwner||!repoName)return[];try{const r=await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/files`,{headers:{Authorization:`token ${token}`}});if(r.status===404)return[];if(!r.ok)return[];return await r.json();}catch{return[];}}
+async function listRepoFiles(){if(!repoOwner||!repoName)return[];try{const r=await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/files`,{headers:{Authorization:`token ${token}`}});if(r.status===404||!r.ok)return[];return await r.json();}catch{return[];}}
 async function deleteRepoFile(path,sha){await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`,{method:'DELETE',headers:{Authorization:`token ${token}`,'Content-Type':'application/json'},body:JSON.stringify({message:`Delete ${path}`,sha})});}
 
 document.getElementById('file-mgr-btn').onclick=async()=>{openModal('file-modal');await refreshFileList();};
@@ -834,18 +739,73 @@ uploadInput.onchange=async e=>{await handleUpload([...e.target.files]);e.target.
 async function handleUpload(files){if(!files.length)return;let ok=0;for(const f of files){const r=await uploadFileToRepo(f);if(r)ok++;}if(ok>0){toast(`${ok}개 업로드 완료!`);await refreshFileList();}}
 document.getElementById('attach-file').onchange=async e=>{const files=[...e.target.files];if(!files.length)return;for(const f of files){const r=await uploadFileToRepo(f);if(r){if(isImg(f.name))ins(`\n![${f.name}](${r.url})\n`);else ins(`[${f.name}](${r.url})`);}}e.target.value='';toast('첨부 완료!');};
 
-// ── 표 붙여넣기 ───────────────────────────────────
-function htmlTableToMd(html){
+// ── 붙여넣기: HTML → 마크다운 스마트 변환 ──────────
+function htmlToMd(html){
   const tmp=document.createElement('div');tmp.innerHTML=html;
-  const table=tmp.querySelector('table');if(!table)return null;
-  const rows=[...table.querySelectorAll('tr')];if(!rows.length)return null;
-  const mdRows=rows.map(row=>{const cells=[...row.querySelectorAll('th,td')];return'| '+cells.map(c=>c.innerText.replace(/\n/g,' ').replace(/\|/g,'\\|').trim()).join(' | ')+' |';});
-  const sep='| '+mdRows[0].split('|').slice(1,-1).map(()=>'---').join(' | ')+' |';
-  return[mdRows[0],sep,...mdRows.slice(1)].join('\n');
+
+  function nodeToMd(node){
+    if(node.nodeType===3)return node.textContent;
+    if(node.nodeType!==1)return'';
+    const tag=node.tagName.toLowerCase();
+    const children=()=>[...node.childNodes].map(nodeToMd).join('');
+
+    if(tag==='br')return'\n';
+    if(tag==='p'||tag==='div')return children()+'\n';
+    if(tag==='h1')return'# '+children()+'\n';
+    if(tag==='h2')return'## '+children()+'\n';
+    if(tag==='h3')return'### '+children()+'\n';
+    if(tag==='strong'||tag==='b')return'**'+children()+'**';
+    if(tag==='em'||tag==='i')return'*'+children()+'*';
+    if(tag==='code')return'`'+children()+'`';
+    if(tag==='pre'){const c=node.querySelector('code');return'```\n'+(c?c.textContent:children()).trimEnd()+'\n```\n';}
+    if(tag==='blockquote')return children().split('\n').filter(l=>l.trim()).map(l=>'> '+l).join('\n')+'\n';
+    if(tag==='a'){const href=node.getAttribute('href')||'';const text=children().trim()||href;return`[${text}](${href})`;}
+    if(tag==='img'){const src=node.getAttribute('src')||'';const alt=node.getAttribute('alt')||'이미지';return`![${alt}](${src})`;}
+    if(tag==='ul'){
+      return[...node.querySelectorAll(':scope>li')].map(li=>{
+        const cb=li.querySelector('input[type=checkbox]');
+        if(cb)return(cb.checked?'- [x] ':'- [ ] ')+li.textContent.trim();
+        return'- '+li.textContent.trim();
+      }).join('\n')+'\n';
+    }
+    if(tag==='ol'){
+      return[...node.querySelectorAll(':scope>li')].map((li,i)=>`${i+1}. ${li.textContent.trim()}`).join('\n')+'\n';
+    }
+    if(tag==='table'){
+      const rows=[...node.querySelectorAll('tr')];if(!rows.length)return'';
+      const mdRows=rows.map(row=>{
+        const cells=[...row.querySelectorAll('th,td')];
+        return'| '+cells.map(c=>c.innerText.replace(/\n/g,' ').replace(/\|/g,'\\|').trim()).join(' | ')+' |';
+      });
+      const sep='| '+mdRows[0].split('|').slice(1,-1).map(()=>'---').join(' | ')+' |';
+      return[mdRows[0],sep,...mdRows.slice(1)].join('\n')+'\n';
+    }
+    // 색상 처리 (span with color style)
+    if(tag==='span'){
+      const color=node.style.color||node.style.backgroundColor;
+      // 마크다운은 색상 미지원이므로 텍스트만 반환 (내용 보존)
+      return children();
+    }
+    return children();
+  }
+
+  let md=[...tmp.childNodes].map(nodeToMd).join('');
+  // 연속 빈줄 정리
+  md=md.replace(/\n{3,}/g,'\n\n').trim();
+  return md;
 }
+
 document.getElementById('md-ed').addEventListener('paste',e=>{
   const html=e.clipboardData.getData('text/html');
-  if(html&&html.includes('<table')){const md=htmlTableToMd(html);if(md){e.preventDefault();ins('\n'+md+'\n');toast('표를 마크다운으로 변환했습니다.');}}
+  const text=e.clipboardData.getData('text/plain');
+  // HTML이 있고 의미있는 구조(표, 볼드, 링크 등)가 포함된 경우 변환
+  if(html&&(html.includes('<table')||html.includes('<strong')||html.includes('<b>')||html.includes('<a ')||html.includes('<ul')||html.includes('<ol')||html.includes('<h1')||html.includes('<h2')||html.includes('<h3')||html.includes('<blockquote')||html.includes('<pre')||html.includes('<img'))){
+    e.preventDefault();
+    const md=htmlToMd(html);
+    if(md.trim()){ins('\n'+md+'\n');toast('서식 포함 붙여넣기 완료');}
+    else{ins(text);}
+  }
+  // 나머지는 기본 텍스트 붙여넣기
 });
 
 // ── 폴더 ──────────────────────────────────────────
@@ -863,7 +823,7 @@ function renderFolders(){
 document.getElementById('new-folder-btn').onclick=()=>openModal('folder-modal');
 document.getElementById('folder-ok-btn').onclick=()=>{const name=document.getElementById('folder-name-in').value.trim();if(!name){toast('폴더 이름을 입력하세요.');return;}const pid=document.getElementById('parent-sel').value;const nf={id:'f'+Date.now(),name,children:[]};if(pid==='root')folders.push(nf);else{const p=findFolder(folders,pid);if(p){if(!p.children)p.children=[];p.children.push(nf);}else folders.push(nf);}saveF();renderFolders();document.getElementById('folder-name-in').value='';closeModal('folder-modal');toast('폴더 생성 완료!');};
 function findFolder(list,id){for(const f of(list||[])){if(f.id===id)return f;const r=findFolder(f.children,id);if(r)return r;}return null;}
-window.delFolder=function(id){if(!confirm('폴더를 삭제할까요?'))return;const rm=(l)=>l.filter(f=>{f.children=rm(f.children||[]);return f.id!==id;});folders=rm(folders);saveF();renderFolders();toast('폴더 삭제 완료');};
+window.delFolder=function(id){if(!confirm('폴더를 삭제할까요?'))return;const rm=l=>l.filter(f=>{f.children=rm(f.children||[]);return f.id!==id;});folders=rm(folders);saveF();renderFolders();toast('폴더 삭제 완료');};
 
 // ── 휴지통 ────────────────────────────────────────
 document.getElementById('trash-btn').onclick=()=>{const el=document.getElementById('trash-list');el.innerHTML=trash.length?'':'<p style="padding:10px;color:var(--text2);text-align:center;">비어있습니다.</p>';trash.forEach((n,i)=>{const d=document.createElement('div');d.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:8px 4px;border-bottom:1px solid var(--border);font-size:13px;';d.innerHTML=`<span>${n.title||'제목 없음'}</span><button style="background:none;border:none;color:var(--accent);cursor:pointer;" onclick="restoreNote(${i})">복원</button>`;el.appendChild(d);});openModal('trash-modal');};
@@ -872,12 +832,16 @@ window.restoreNote=function(i){notes.unshift(trash[i]);trash.splice(i,1);saveL()
 
 // ── 노트 ──────────────────────────────────────────
 function genId(){return 'n'+Date.now()+Math.random().toString(36).slice(2);}
-function defNotes(){return [{id:'demo1',title:'환영합니다! 📝',body:'# Notes 앱\n\n🔒 **AES-256 암호화**로 토큰을 안전하게 보호합니다.\n\n**로그인 방법:** ID + 비밀번호\n- ID 형식: `GitHub아이디/코드` (예: hyeonji/abc123)\n- 비밀번호를 모르면 누구도 복호화 불가\n\n- [x] AES-256 암호화 보안\n- [x] ID + 비밀번호 로그인\n- [x] 표 붙여넣기 자동 변환\n- [x] 노트 링크 공유\n- [ ] 나만의 노트 작성',folder:'all',tags:['가이드'],created:Date.now(),favorite:false}];}
+function defNotes(){return [{id:'demo1',title:'환영합니다! 📝',body:'# Notes 앱\n\n🔒 **AES-256 암호화** 보안\n\n- [x] ID + 비밀번호 로그인\n- [x] 드래그 선택 후 서식 일괄 적용\n- [x] 하이퍼링크 삽입 (🔗 버튼)\n- [x] HTML 서식 붙여넣기 (표·볼드·링크 등)\n- [ ] 나만의 노트 작성\n\n## 사용 팁\n\n텍스트를 드래그하고 툴바의 목록·체크박스·인용문 버튼을 누르면 줄별로 적용됩니다.\n\n링크 삽입: 🔗 버튼 → 제목과 URL 입력\n\n붙여넣기: 표·볼드·링크가 포함된 내용을 그대로 붙여넣으면 마크다운으로 자동 변환됩니다.',folder:'all',tags:['가이드'],created:Date.now(),favorite:false}];}
 function saveL(){localStorage.setItem(LK,JSON.stringify(notes));}
 function filtered(){return notes.filter(n=>{if(afolder==='fav')return n.favorite;if(afolder!=='all'&&n.folder!==afolder)return false;if(atag&&!(n.tags||[]).includes(atag))return false;if(sq){const q=sq.toLowerCase();if(!n.title.toLowerCase().includes(q)&&!n.body.toLowerCase().includes(q))return false;}return true;}).sort((a,b)=>b.created-a.created);}
 function allTags(){const t=new Set();notes.forEach(n=>(n.tags||[]).forEach(g=>t.add(g)));return[...t];}
 function renderAll(){renderList();renderTags();}
-function renderList(){const el=document.getElementById('note-list');const fn=filtered();el.innerHTML='';if(!fn.length){el.innerHTML='<div style="padding:10px;text-align:center;color:var(--text2);font-size:12px;">노트 없음</div>';return;}fn.forEach(n=>{const d=document.createElement('div');d.className='nrow'+(n.id===cur?' on':'');const pv=n.body.replace(/[#`*_>\-\[\]!|]/g,'').replace(/\n/g,' ').slice(0,45);const tg=(n.tags||[]).map(t=>`<span class="ntag">${t}</span>`).join('');d.innerHTML=`<div class="nt">${n.title||'제목 없음'}</div><div class="np">${pv||'내용 없음'}</div><div class="ntags">${tg}</div><span class="nrow-fav${n.favorite?' on':''}">★</span>`;d.querySelector('.nrow-fav').onclick=e=>{e.stopPropagation();n.favorite=!n.favorite;saveL();renderList();};d.onclick=()=>{selNote(n.id);if(window.innerWidth<=700)closeSB();};el.appendChild(d);});}
+function renderList(){
+  const el=document.getElementById('note-list');const fn=filtered();el.innerHTML='';
+  if(!fn.length){el.innerHTML='<div style="padding:10px;text-align:center;color:var(--text2);font-size:12px;">노트 없음</div>';return;}
+  fn.forEach(n=>{const d=document.createElement('div');d.className='nrow'+(n.id===cur?' on':'');const pv=n.body.replace(/[#`*_>\-\[\]!|]/g,'').replace(/\n/g,' ').slice(0,45);const tg=(n.tags||[]).map(t=>`<span class="ntag">${t}</span>`).join('');d.innerHTML=`<div class="nt">${n.title||'제목 없음'}</div><div class="np">${pv||'내용 없음'}</div><div class="ntags">${tg}</div><span class="nrow-fav${n.favorite?' on':''}">★</span>`;d.querySelector('.nrow-fav').onclick=e=>{e.stopPropagation();n.favorite=!n.favorite;saveL();renderList();};d.onclick=()=>{selNote(n.id);if(window.innerWidth<=700)closeSB();};el.appendChild(d);});
+}
 function renderTags(){const a=document.getElementById('tag-area');const tags=allTags();a.innerHTML='';tags.forEach(t=>{const p=document.createElement('span');p.className='tag-pill'+(atag===t?' on':'');p.textContent=t;p.onclick=()=>{atag=atag===t?null:t;renderAll();};a.appendChild(p);});}
 function selNote(id){cur=id;const n=notes.find(x=>x.id===id);if(!n)return;document.getElementById('title-in').value=n.title;document.getElementById('md-ed').value=n.body;document.getElementById('folder-sel').value=n.folder||'all';renderFTags(n.tags||[]);renderList();if(!editMode)renderPrev();}
 function renderFTags(tags){
@@ -906,11 +870,12 @@ function parseMd(raw){
   const imgs={};md=md.replace(/!\[([^\]]*)\]\((https?:\/\/[^)]+)\)/g,(m,alt,src)=>{const k='__I'+(Object.keys(imgs).length)+'__';imgs[k]=`<img src="${src}" alt="${alt}" style="max-width:100%;border-radius:6px;margin:4px 0;display:block;"/>`;return k;});
   md=md.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   md=md.replace(/^#{3} (.+)$/gm,'<h3>$1</h3>').replace(/^#{2} (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>').replace(/^---$/gm,'<hr>').replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/`([^`\n]+)`/g,'<code>$1</code>');
-  md=md.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,'<a href="$2" target="_blank">$1</a>');
+  md=md.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
   md=md.replace(/((?:^\|.+\|\n?)+)/gm,block=>{const rows=block.trim().split('\n');let html='<table>';let hd=true;rows.forEach(row=>{if(/^\|[\s\-:|]+\|$/.test(row.trim()))return;const cells=row.split('|').slice(1,-1).map(c=>c.trim());const tag=hd?'th':'td';html+='<tr>'+cells.map(c=>`<${tag}>${c}</${tag}>`).join('')+'</tr>';hd=false;});return html+'</table>';});
   md=md.replace(/^- \[x\] (.+)$/gm,'<div class="task-row"><input type="checkbox" checked onchange="tgTask(this,\'$1\')"> <span class="done">$1</span></div>');
   md=md.replace(/^- \[ \] (.+)$/gm,'<div class="task-row"><input type="checkbox" onchange="tgTask(this,\'$1\')"> <span>$1</span></div>');
   md=md.replace(/^- (.+)$/gm,'<li>$1</li>').replace(/(<li>.*?<\/li>\n?)+/g,m=>'<ul>'+m+'</ul>');
+  md=md.replace(/^\d+\. (.+)$/gm,'<li>$1</li>').replace(/(<li>.*?<\/li>\n?)+/g,m=>{if(m.match(/^<li>/))return'<ol>'+m+'</ol>';return m;});
   md=md.replace(/\n{2,}/g,'</p><p>').replace(/\n/g,'<br>');
   md='<p>'+md+'</p>';md=md.replace(/<p>\s*<\/p>/g,'');
   Object.entries(codes).forEach(([k,v])=>{md=md.split(k).join(v);});
@@ -921,9 +886,94 @@ function renderPrev(){document.getElementById('preview').innerHTML=parseMd(docum
 window.cpCode=id=>{const el=document.getElementById(id);if(!el)return;navigator.clipboard.writeText(el.textContent);const b=el.closest('.cb-wrap')?.querySelector('.copy-btn');if(b){b.textContent='복사됨!';setTimeout(()=>b.textContent='복사',1500);}};
 window.tgTask=(cb,text)=>{const n=notes.find(x=>x.id===cur);if(!n)return;n.body=cb.checked?n.body.replace(`- [ ] ${text}`,`- [x] ${text}`):n.body.replace(`- [x] ${text}`,`- [ ] ${text}`);document.getElementById('md-ed').value=n.body;saveL();renderPrev();};
 
-// ── 툴바 ──────────────────────────────────────────
-function ins(text,wrap){const ta=document.getElementById('md-ed');const s=ta.selectionStart,e=ta.selectionEnd,sel=ta.value.slice(s,e);let v=wrap&&sel?(text.slice(0,text.length/2)+sel+text.slice(text.length/2)):text;ta.value=ta.value.slice(0,s)+v+ta.value.slice(e);ta.selectionStart=ta.selectionEnd=s+v.length;ta.focus();updCur();}
-document.getElementById('toolbar').onclick=e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;if(a==='bold')ins('****',true);else if(a==='italic')ins('**',true);else if(a==='code')ins('``',true);else if(a==='h1')ins('# ');else if(a==='h2')ins('## ');else if(a==='h3')ins('### ');else if(a==='ul')ins('- ');else if(a==='task')ins('- [ ] ');else if(a==='quote')ins('> ');else if(a==='codeblock')ins('```\n\n```');else if(a==='hr')ins('\n---\n');else if(a==='attach')document.getElementById('attach-file').click();else if(a==='table'){const r=prompt('행 수:',3);const c=prompt('열 수:',3);if(r&&c){const h='| '+Array(+c).fill('제목').join(' | ')+' |',sp='| '+Array(+c).fill('---').join(' | ')+' |',bd=Array(+r).fill('| '+Array(+c).fill('내용').join(' | ')+' |').join('\n');ins('\n'+h+'\n'+sp+'\n'+bd+'\n');}}};
+// ── 툴바 (드래그 선택 줄별 적용 포함) ─────────────
+function ins(text,wrap){
+  const ta=document.getElementById('md-ed');
+  const s=ta.selectionStart,e=ta.selectionEnd,sel=ta.value.slice(s,e);
+  let v=wrap&&sel?(text.slice(0,text.length/2)+sel+text.slice(text.length/2)):text;
+  ta.value=ta.value.slice(0,s)+v+ta.value.slice(e);
+  ta.selectionStart=ta.selectionEnd=s+v.length;ta.focus();updCur();
+}
+
+function applyLinePrefix(prefix){
+  const ta=document.getElementById('md-ed');
+  const s=ta.selectionStart,e=ta.selectionEnd;
+  const selected=ta.value.slice(s,e);
+  if(!selected){ins(prefix);return;}
+  const lines=selected.split('\n');
+  const allHave=lines.every(l=>l.startsWith(prefix));
+  const result=lines.map(l=>allHave?l.slice(prefix.length):prefix+l).join('\n');
+  ta.value=ta.value.slice(0,s)+result+ta.value.slice(e);
+  ta.selectionStart=s;ta.selectionEnd=s+result.length;
+  ta.focus();updCur();
+}
+
+function applyInlineWrap(marker){
+  const ta=document.getElementById('md-ed');
+  const s=ta.selectionStart,e=ta.selectionEnd;
+  const sel=ta.value.slice(s,e);
+  if(!sel){ins(marker+marker);ta.selectionStart=ta.selectionEnd=s+marker.length;ta.focus();return;}
+  const already=sel.startsWith(marker)&&sel.endsWith(marker)&&sel.length>marker.length*2;
+  const result=already?sel.slice(marker.length,sel.length-marker.length):marker+sel+marker;
+  ta.value=ta.value.slice(0,s)+result+ta.value.slice(e);
+  ta.selectionStart=s;ta.selectionEnd=s+result.length;
+  ta.focus();updCur();
+}
+
+document.getElementById('toolbar').onclick=e=>{
+  const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
+  if(a==='bold'){applyInlineWrap('**');return;}
+  if(a==='italic'){applyInlineWrap('*');return;}
+  if(a==='code'){applyInlineWrap('`');return;}
+  if(a==='ul'){applyLinePrefix('- ');return;}
+  if(a==='task'){applyLinePrefix('- [ ] ');return;}
+  if(a==='quote'){applyLinePrefix('> ');return;}
+  if(a==='h1'){applyLinePrefix('# ');return;}
+  if(a==='h2'){applyLinePrefix('## ');return;}
+  if(a==='h3'){applyLinePrefix('### ');return;}
+  if(a==='codeblock'){ins('```\n\n```');return;}
+  if(a==='hr'){ins('\n---\n');return;}
+  if(a==='attach'){document.getElementById('attach-file').click();return;}
+  if(a==='link'){
+    // 링크 모달 열기: 선택된 텍스트가 있으면 제목에 미리 채움
+    const ta=document.getElementById('md-ed');
+    const sel=ta.value.slice(ta.selectionStart,ta.selectionEnd).trim();
+    document.getElementById('link-title-in').value=sel||'';
+    document.getElementById('link-url-in').value='https://';
+    openModal('link-modal');
+    setTimeout(()=>{
+      const toFocus=sel?document.getElementById('link-url-in'):document.getElementById('link-title-in');
+      toFocus.focus();toFocus.select&&toFocus.select();
+    },100);
+    return;
+  }
+  if(a==='table'){
+    const r=prompt('행 수:',3);const c=prompt('열 수:',3);
+    if(r&&c){const h='| '+Array(+c).fill('제목').join(' | ')+' |',sp='| '+Array(+c).fill('---').join(' | ')+' |',bd=Array(+r).fill('| '+Array(+c).fill('내용').join(' | ')+' |').join('\n');ins('\n'+h+'\n'+sp+'\n'+bd+'\n');}
+    return;
+  }
+};
+
+// ── 링크 삽입 모달 ────────────────────────────────
+document.getElementById('link-ok-btn').onclick=()=>{
+  const title=document.getElementById('link-title-in').value.trim();
+  const url=document.getElementById('link-url-in').value.trim();
+  if(!url){toast('URL을 입력하세요.');return;}
+  const ta=document.getElementById('md-ed');
+  const s=ta.selectionStart,e=ta.selectionEnd;
+  const sel=ta.value.slice(s,e).trim();
+  const displayTitle=title||sel||url;
+  const md=`[${displayTitle}](${url})`;
+  // 선택 영역 대체
+  ta.value=ta.value.slice(0,s)+md+ta.value.slice(e);
+  ta.selectionStart=ta.selectionEnd=s+md.length;
+  ta.focus();updCur();
+  closeModal('link-modal');
+  document.getElementById('link-title-in').value='';
+  document.getElementById('link-url-in').value='';
+  toast('링크 삽입 완료');
+};
+document.getElementById('link-url-in').onkeydown=e=>{if(e.key==='Enter')document.getElementById('link-ok-btn').click();};
 
 // ── 탭 ────────────────────────────────────────────
 document.getElementById('t-edit').onclick=()=>{editMode=true;document.getElementById('md-ed').style.display='';document.getElementById('preview').style.display='none';document.getElementById('toolbar').style.display='';document.getElementById('t-edit').classList.add('on');document.getElementById('t-prev').classList.remove('on');};
