@@ -1123,7 +1123,7 @@ function parseGhSrc(url){
     if(i1<0||i2<0)return null;
     return{owner:rest.slice(0,i1),repo:rest.slice(i1+1,i2),path:rest.slice(i2+1)};
   }
-  const m=url.match(/^https?:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/[^/]+\/([^?]+)/);
+  const m=url.match(/^https?:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/.+?\/(files\/[^?]+)/);
   if(m)return{owner:m[1],repo:m[2],path:decodeURIComponent(m[3])};
   return null;
 }
@@ -1145,7 +1145,7 @@ async function resolveGhImages(root){
   await Promise.all(imgs.map(async img=>{
     const owner=img.dataset.ghOwner,repo=img.dataset.ghRepo,path=decodeURIComponent(img.dataset.ghPath);
     try{img.src=await fetchGhDownloadUrl(owner,repo,path);}
-    catch{img.alt='⚠ 이미지를 불러올 수 없습니다';img.style.cssText+='opacity:.5;min-height:60px;background:var(--surface2);';}
+    catch(e){console.warn('이미지 로드 실패:',owner,repo,path,e);img.alt='⚠ 이미지를 불러올 수 없습니다';img.style.cssText+='opacity:.5;min-height:60px;background:var(--surface2);';}
   }));
 }
 window.openGhFile=async function(el){
