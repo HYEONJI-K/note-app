@@ -150,6 +150,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .copy-btn{position:absolute;top:5px;right:5px;padding:2px 7px;font-size:11px;border:1px solid var(--border);border-radius:3px;background:var(--surface);color:var(--text2);cursor:pointer;}
 #preview img{max-width:100%;border-radius:6px;margin:4px 0;display:block;background:var(--surface2);}
 #preview img:invalid,#preview img[alt*="⚠"]{min-height:80px;opacity:.5;padding:20px;box-sizing:border-box;text-align:center;}
+.img-error-wrapper{display:flex;flex-direction:column;align-items:center;margin:4px 0;}
+.img-download-btn{padding:8px 14px;border:1px solid var(--border);border-radius:6px;background:var(--accent-bg);color:var(--accent);cursor:pointer;font-size:12px;font-weight:500;margin-top:8px;transition:all .2s;}
+.img-download-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
 #preview a{color:var(--accent);text-decoration:underline;}
 
 /* 맨위/맨아래 버튼 */
@@ -478,6 +481,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
         <div class="ilab">현재 ID (클릭하면 복사)</div>
         <div class="ival" id="my-id-val">-</div>
       </div>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:12px;">
+      <div class="modal-row" style="margin-bottom:8px;"><span style="font-weight:500;">🖼 이미지 상태 확인</span></div>
+      <div style="font-size:12px;color:var(--text2);background:var(--surface2);border-radius:8px;padding:10px;margin-bottom:8px;">
+        <div id="repo-status" style="margin-bottom:8px;">
+          <div>📁 저장소: <span id="current-repo-info" style="font-weight:500;color:var(--accent);">설정 안 됨</span></div>
+          <div>🔓 토큰: <span id="current-token-info" style="font-weight:500;">없음</span></div>
+        </div>
+        <div id="image-list-status" style="max-height:200px;overflow-y:auto;border-top:1px solid var(--border);padding-top:8px;margin-top:8px;">
+          <div style="color:var(--text2);font-size:11px;">이미지를 불러오는 중...</div>
+        </div>
+      </div>
+      <button class="btn-ok" id="check-images-btn" style="width:100%;padding:8px;border-radius:6px;border:none;cursor:pointer;font-size:12px;">🔍 이미지 상태 새로고침</button>
     </div>
     <div class="modal-btns">
       <button class="btn-ok" onclick="closeModal('settings-modal')">완료</button>
@@ -1141,6 +1157,141 @@ async function fetchGhDownloadUrl(owner,repo,path){
   ghUrlCache.set(key,d.download_url);setTimeout(()=>ghUrlCache.delete(key),4*60*1000);
   return d.download_url;
 }
+// ── 이미지 상태 확인 함수 ──────────────────────────────
+async function checkImageStatus(){
+  const statusEl=document.getElementById('image-list-status');
+  statusEl.innerHTML='<div style="color:var(--text2);font-size:11px;">🔄 검사 중...</div>';
+  
+  // 현재 저장소 정보 표시
+  const repoInfo=document.getElementById('current-repo-info');
+  const tokenInfo=document.getElementById('current-token-info');
+  const owner=localStorage.getItem(REPOK_O)||'(미설정)';
+  const repo=localStorage.getItem(REPOK_R)||'(미설정)';
+  const tokenStatus=token?'✅ 설정됨':'❌ 없음';
+  
+  repoInfo.innerHTML=owner+'/'+repo;
+  repoInfo.style.color=owner==='(미설정)'?'var(--danger)':'var(--accent)';
+  tokenInfo.innerHTML=tokenStatus;
+  tokenInfo.style.color=token?'#4ade80':'var(--text2)';
+  
+  // 모든 이미지 수집
+  const allImgs=document.querySelectorAll('img[data-gh-owner], img[data-img-url]');
+  if(allImgs.length===0){
+    statusEl.innerHTML='<div style="color:var(--text2);font-size:11px;">📭 노트에 이미지가 없습니다.</div>';
+    return;
+  }
+  
+  let html='<div style="font-size:11px;">';
+  let working=0,failed=0;
+  
+  for(const img of allImgs){
+    const ghOwner=img.dataset.ghOwner;
+    const ghRepo=img.dataset.ghRepo;
+    const ghPath=img.dataset.ghPath?decodeURIComponent(img.dataset.ghPath):null;
+    const imgUrl=img.dataset.imgUrl;
+    
+    if(ghOwner&&ghRepo&&ghPath){
+      // GitHub 이미지
+      const filename=ghPath.split('/').pop();
+      try{
+        const url=await fetchGhDownloadUrl(ghOwner,ghRepo,ghPath);
+        const resp=await fetch(url,{method:'HEAD'});
+        if(resp.ok){
+          html+=`<div style="color:#4ade80;margin:4px 0;">✅ ${filename}</div>`;
+          working++;
+        }else{
+          html+=`<div style="color:var(--danger);margin:4px 0;">❌ ${filename} (HTTP ${resp.status})</div>`;
+          failed++;
+        }
+      }catch(e){
+        html+=`<div style="color:var(--danger);margin:4px 0;">❌ ${filename} (접근 불가)</div>`;
+        failed++;
+      }
+    }else if(imgUrl){
+      // 일반 URL 이미지
+      const filename=imgUrl.split('/').pop()?.split('?')[0]||'image';
+      try{
+        const resp=await fetch(imgUrl,{method:'HEAD'});
+        if(resp.ok){
+          html+=`<div style="color:#4ade80;margin:4px 0;">✅ ${filename}</div>`;
+          working++;
+        }else{
+          html+=`<div style="color:var(--danger);margin:4px 0;">❌ ${filename} (HTTP ${resp.status})</div>`;
+          failed++;
+        }
+      }catch(e){
+        html+=`<div style="color:var(--danger);margin:4px 0;">❌ ${filename} (접근 불가)</div>`;
+        failed++;
+      }
+    }
+  }
+  
+  html+=`</div>`;
+  html=`<div style="margin-bottom:8px;padding:8px;background:var(--bg);border-radius:6px;">
+    <div style="font-weight:500;margin-bottom:6px;">📊 검사 결과</div>
+    <div style="font-size:11px;margin-bottom:8px;">
+      <div>✅ 정상: ${working}개</div>
+      <div>❌ 실패: ${failed}개</div>
+    </div>
+    <div style="max-height:140px;overflow-y:auto;">
+      ${html}
+    </div>
+  </div>`;
+  
+  statusEl.innerHTML=html;
+}
+
+document.getElementById('check-images-btn')?.addEventListener('click',checkImageStatus);
+
+// ── 이미지 다운로드 함수 ──────────────────────────────
+window.downloadImage=async function(el){
+  try{
+    const owner=el.dataset.ghOwner;
+    const repo=el.dataset.ghRepo;
+    const path=el.dataset.ghPath?decodeURIComponent(el.dataset.ghPath):null;
+    const url=el.dataset.imgUrl;
+    let downloadUrl=null;
+    let filename='image';
+    
+    if(owner&&repo&&path){
+      // GitHub 이미지
+      filename=path.split('/').pop()||'image';
+      try{
+        downloadUrl=await fetchGhDownloadUrl(owner,repo,path);
+      }catch{
+        toast('이미지 다운로드 URL을 찾을 수 없습니다.');
+        return;
+      }
+    }else if(url){
+      // 일반 URL 이미지
+      downloadUrl=url;
+      filename=url.split('/').pop()?.split('?')[0]||'image';
+    }else{
+      toast('다운로드할 수 없습니다.');
+      return;
+    }
+    
+    try{
+      const response=await fetch(downloadUrl);
+      if(!response.ok)throw new Error('다운로드 실패');
+      const blob=await response.blob();
+      const a=Object.assign(document.createElement('a'),{
+        href:URL.createObjectURL(blob),
+        download:filename||'image'
+      });
+      a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+      toast('다운로드 완료: '+filename);
+    }catch(e){
+      console.error('이미지 다운로드 오류:',e);
+      toast('이미지 다운로드에 실패했습니다.');
+    }
+  }catch(e){
+    console.error('다운로드 함수 오류:',e);
+    toast('오류가 발생했습니다.');
+  }
+};
+
 async function resolveGhImages(root){
   const imgs=[...root.querySelectorAll('img[data-gh-owner]')];
   await Promise.all(imgs.map(async img=>{
@@ -1148,17 +1299,35 @@ async function resolveGhImages(root){
     try{
       const url=await fetchGhDownloadUrl(owner,repo,path);
       img.src=url;
+      img.dataset.imgUrl=url;
       img.onerror=function(){
-        this.alt='⚠ 이미지를 불러올 수 없습니다';
-        this.style.cssText='opacity:.5;min-height:80px;background:var(--surface2);padding:20px;text-align:center;display:flex;align-items:center;justify-content:center;';
+        showImageError(this);
       };
     }
     catch(e){
       console.warn('이미지 로드 실패:',owner,repo,path,e);
-      img.alt='⚠ 이미지 경로를 찾을 수 없습니다';
-      img.style.cssText='opacity:.5;min-height:80px;background:var(--surface2);padding:20px;text-align:center;display:flex;align-items:center;justify-content:center;';
+      showImageError(img);
     }
   }));
+}
+
+function showImageError(img){
+  img.alt='⚠ 이미지를 불러올 수 없습니다';
+  img.style.cssText='opacity:.5;min-height:80px;background:var(--surface2);padding:20px;text-align:center;display:flex;align-items:center;justify-content:center;';
+  
+  // 이미지를 wrapper로 감싸고 다운로드 버튼 추가
+  if(!img.parentElement?.classList.contains('img-error-wrapper')){
+    const wrapper=document.createElement('div');
+    wrapper.className='img-error-wrapper';
+    img.parentNode.insertBefore(wrapper,img);
+    wrapper.appendChild(img);
+    
+    const downloadBtn=document.createElement('button');
+    downloadBtn.className='img-download-btn';
+    downloadBtn.textContent='⬇ 이미지 다운로드';
+    downloadBtn.onclick=()=>downloadImage(img);
+    wrapper.appendChild(downloadBtn);
+  }
 }
 window.openGhFile=async function(el){
   const owner=el.dataset.ghOwner,repo=el.dataset.ghRepo,path=decodeURIComponent(el.dataset.ghPath);
@@ -1189,9 +1358,9 @@ function parseMd(raw){
     const k='__I'+idx+'__';
     const gh=parseGhSrc(src);
     const sizeStyle=imgSizeStyle(size);
-    const common=`data-img-idx="${idx}" data-img-size="${size||''}" onclick="openImgSizeModal(this)" style="${sizeStyle}border-radius:6px;margin:4px 0;display:block;cursor:zoom-in;" onerror="this.alt='⚠ 이미지를 불러올 수 없습니다'; this.style.opacity='0.5'; this.style.minHeight='80px'; this.style.background='var(--surface2)'; this.style.padding='20px';"`;
+    const common=`data-img-idx="${idx}" data-img-size="${size||''}" onclick="openImgSizeModal(this)" style="${sizeStyle}border-radius:6px;margin:4px 0;display:block;cursor:zoom-in;" onerror="showImageError(this)"`;
     imgs[k]=gh?`<img data-gh-owner="${gh.owner}" data-gh-repo="${gh.repo}" data-gh-path="${encodeURIComponent(gh.path)}" src="${GH_PIXEL}" alt="${alt}" ${common}/>`
-             :`<img src="${src}" alt="${alt}" ${common}/>`;
+             :`<img data-img-url="${src}" src="${src}" alt="${alt}" ${common}/>`;
     return k;
   });
   md=md.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
