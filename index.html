@@ -63,7 +63,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 #sidebar-resize{position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;background:transparent;}
 #sidebar-resize:hover{background:var(--accent);opacity:.3;}
 #search{margin:8px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:13px;outline:none;width:calc(100% - 16px);}
-#folder-tree{overflow-y:auto;padding:4px;flex-shrink:0;max-height:200px;}
+
+/* 폴더-태그 리사이저 */
+#folder-tag-resizer{height:4px;background:transparent;cursor:row-resize;flex-shrink:0;position:relative;}
+#folder-tag-resizer:hover{background:var(--accent);opacity:.3;}
+
+#folder-tree{overflow-y:auto;padding:4px;flex-shrink:0;min-height:60px;transition:flex-basis .2s;}
 .folder-item{padding:5px 8px;cursor:pointer;font-size:13px;color:var(--text2);display:flex;align-items:center;border-radius:5px;position:relative;}
 .folder-item:hover,.folder-item.on{background:var(--surface2);color:var(--text);}
 .folder-item-actions{display:none;gap:2px;margin-left:auto;}
@@ -71,10 +76,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .folder-item-actions button{background:none;border:none;cursor:pointer;color:var(--text2);font-size:11px;padding:1px 4px;border-radius:3px;}
 .folder-item-actions button:hover{background:var(--surface0);color:var(--text);}
 .sec-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;padding:6px 10px 2px;}
-#tag-area{display:flex;flex-wrap:wrap;gap:3px;padding:4px 8px 6px;border-bottom:1px solid var(--border);}
+#tag-area{display:flex;flex-wrap:wrap;gap:3px;padding:4px 8px 6px;border-bottom:1px solid var(--border);flex-shrink:0;}
+
+/* 태그-노트 리사이저 */
+#tag-note-resizer{height:4px;background:transparent;cursor:row-resize;flex-shrink:0;position:relative;}
+#tag-note-resizer:hover{background:var(--accent);opacity:.3;}
+
 .tag-pill{display:inline-flex;padding:2px 7px;border-radius:20px;font-size:11px;cursor:pointer;background:var(--surface);color:var(--text2);border:1px solid var(--border);}
 .tag-pill.on{background:var(--accent-bg);color:var(--accent);border-color:var(--accent);}
-#note-list{flex:1;overflow-y:auto;padding:4px;}
+#note-list{flex:1;overflow-y:auto;padding:4px;min-height:60px;}
 .nrow{padding:7px 9px;border-radius:6px;cursor:pointer;margin-bottom:2px;border:1px solid transparent;position:relative;}
 .nrow:hover{background:var(--surface);}
 .nrow.on{background:var(--surface);border-color:var(--border);}
@@ -300,8 +310,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
       <input id="search" placeholder="검색..."/>
       <div class="sec-label">폴더</div>
       <div id="folder-tree"></div>
+      <div id="folder-tag-resizer"></div>
       <div class="sec-label">태그</div>
       <div id="tag-area"></div>
+      <div id="tag-note-resizer"></div>
       <div id="note-list"></div>
       <div id="sb-btns">
         <button id="new-btn">+ 새 노트</button>
@@ -551,11 +563,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 
 <div id="toast"></div>
 <script>
-const LK='notes_local_v1',FK='notes_folders_v1',TRASHK='notes_trash_v1',RK='notes_repo_v1';
+const LK='notes_local_v1',FK='notes_folders_v1',TRASHK='notes_trash_v1',RK='notes_repo_v1',SBSIZEK='sidebar_sizes_v1';
 let token='',gistId='',myId='',ghUser='',idMapGistId='';
 let notes=[],folders=[],trash=[],cur=null,afolder='all',atag=null,sq='',editMode=true;
 let repoOwner='',repoName='';
 let movingFolderId=null;
+let sidebarSizes={folderHeight:200,noteHeight:300};
 
 // ── AES-256-GCM ───────────────────────────────────
 async function deriveKey(pw,salt){
@@ -982,15 +995,21 @@ function renderFolders(){
   const rl=(list,depth)=>{
     (list||[]).forEach(f=>{
       const d=document.createElement('div');d.className='folder-item'+(afolder===f.id?' on':'');d.style.paddingLeft=(10+depth*14)+'px';
-      const icon=f.children&&f.children.length?'📂':'📁';
-      d.innerHTML=`<span style="margin-right:4px;">${icon}</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.name}</span>
+      const hasChildren=f.children&&f.children.length;
+      const isExpanded=f.expanded!==false; // 기본값은 펼친 상태
+      const toggleIcon=hasChildren?(isExpanded?'▼':'▶'):'  '; // 자식이 없으면 공백
+      const folderIcon=hasChildren?'📂':'📁';
+      
+      d.innerHTML=`<span class="folder-toggle" style="display:inline-block;width:14px;margin-right:2px;cursor:pointer;user-select:none;" onclick="event.stopPropagation();toggleFolderExpand('${f.id}')">${toggleIcon}</span><span style="margin-right:4px;">${folderIcon}</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.name}</span>
         <div class="folder-item-actions">
           <button onclick="event.stopPropagation();renameFolderModal('${f.id}')" title="이름 변경">✏</button>
           <button onclick="event.stopPropagation();moveFolderModal('${f.id}')" title="위치 이동">↕</button>
           <button onclick="event.stopPropagation();delFolder('${f.id}')" title="삭제" style="color:var(--danger);">✕</button>
         </div>`;
       d.onclick=()=>{afolder=f.id;atag=null;renderFolders();renderAll();};tree.appendChild(d);
-      if(f.children)rl(f.children,depth+1);
+      
+      // expanded 상태에 따라 자식 폴더 렌더링
+      if(hasChildren&&isExpanded)rl(f.children,depth+1);
     });
   };
   rl(folders,0);
@@ -1012,6 +1031,16 @@ document.getElementById('new-folder-btn').onclick=()=>{
   openModal('folder-modal');
   setTimeout(()=>document.getElementById('folder-name-in').focus(),100);
 };
+// ── 폴더 접기/펼치기 ──────────────────────────────────
+window.toggleFolderExpand=function(id){
+  const folder=findFolderDeep(folders,id);
+  if(folder&&folder.children&&folder.children.length){
+    folder.expanded=folder.expanded!==false?false:true;
+    saveF();
+    renderFolders();
+  }
+};
+
 document.getElementById('folder-ok-btn').onclick=()=>{
   const name=document.getElementById('folder-name-in').value.trim();if(!name){toast('폴더 이름을 입력하세요.');return;}
   const mode=document.getElementById('folder-ok-btn').dataset.mode;
@@ -1561,6 +1590,93 @@ function closeSB(){
   const sb=document.getElementById('sidebar');
   sb.classList.remove('open');overlay.classList.remove('open');
 }
+
+// ── 사이드바 섹션 크기 조절 ──────────────────────────────
+function loadSidebarSizes(){
+  const saved=localStorage.getItem(SBSIZEK);
+  if(saved){
+    try{sidebarSizes=JSON.parse(saved);}catch{}
+  }
+  applySidebarSizes();
+}
+
+function applySidebarSizes(){
+  const folderTree=document.getElementById('folder-tree');
+  const noteList=document.getElementById('note-list');
+  folderTree.style.flexBasis=sidebarSizes.folderHeight+'px';
+  noteList.style.flexBasis=sidebarSizes.noteHeight+'px';
+}
+
+function saveSidebarSizes(){
+  localStorage.setItem(SBSIZEK,JSON.stringify(sidebarSizes));
+}
+
+// 폴더-태그 리사이저
+const folderTagResizer=document.getElementById('folder-tag-resizer');
+let isResizingFolderTag=false;
+let folderTagStartY=0;
+let folderTagStartHeight=0;
+
+folderTagResizer.addEventListener('mousedown',e=>{
+  if(window.innerWidth<=700)return; // 모바일에서 비활성화
+  isResizingFolderTag=true;
+  folderTagStartY=e.clientY;
+  folderTagStartHeight=document.getElementById('folder-tree').offsetHeight;
+  document.body.style.cursor='row-resize';
+  document.body.style.userSelect='none';
+});
+
+document.addEventListener('mousemove',e=>{
+  if(!isResizingFolderTag)return;
+  const delta=e.clientY-folderTagStartY;
+  const newHeight=Math.max(60,folderTagStartHeight+delta);
+  sidebarSizes.folderHeight=newHeight;
+  applySidebarSizes();
+});
+
+document.addEventListener('mouseup',()=>{
+  if(isResizingFolderTag){
+    saveSidebarSizes();
+    document.body.style.cursor='auto';
+    document.body.style.userSelect='';
+  }
+  isResizingFolderTag=false;
+});
+
+// 태그-노트 리사이저
+const tagNoteResizer=document.getElementById('tag-note-resizer');
+let isResizingTagNote=false;
+let tagNoteStartY=0;
+let tagNoteStartHeight=0;
+
+tagNoteResizer.addEventListener('mousedown',e=>{
+  if(window.innerWidth<=700)return; // 모바일에서 비활성화
+  isResizingTagNote=true;
+  tagNoteStartY=e.clientY;
+  tagNoteStartHeight=document.getElementById('note-list').offsetHeight;
+  document.body.style.cursor='row-resize';
+  document.body.style.userSelect='none';
+});
+
+document.addEventListener('mousemove',e=>{
+  if(!isResizingTagNote)return;
+  const delta=e.clientY-tagNoteStartY;
+  const newHeight=Math.max(60,tagNoteStartHeight-delta);
+  sidebarSizes.noteHeight=newHeight;
+  applySidebarSizes();
+});
+
+document.addEventListener('mouseup',()=>{
+  if(isResizingTagNote){
+    saveSidebarSizes();
+    document.body.style.cursor='auto';
+    document.body.style.userSelect='';
+  }
+  isResizingTagNote=false;
+});
+
+// 초기화
+loadSidebarSizes();
 
 // ── 내보내기 / 불러오기 ──────────────────────────
 function dlFile(c,n,t){const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([c],{type:t})),download:n});a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
