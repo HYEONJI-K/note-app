@@ -41,7 +41,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 #topbar{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
 #menu-btn{padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:transparent;cursor:pointer;font-size:17px;color:var(--text);flex-shrink:0;}
 #topbar h1{font-size:15px;font-weight:500;flex:1;min-width:0;}
-#save-btn{flex:1;min-width:0;text-align:left;background:transparent;border:1px solid transparent;color:var(--text);font-size:15px;font-weight:500;cursor:pointer;padding:6px 8px;border-radius:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#save-btn{min-width:0;text-align:center;background:transparent;border:1px solid transparent;color:var(--text);font-size:14px;font-weight:500;cursor:pointer;padding:6px 12px;border-radius:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;}
 #save-btn:hover{background:var(--surface2);}
 #save-btn:active{background:var(--accent-bg);color:var(--accent);border-color:var(--accent);}
 #save-btn.saving{color:var(--text2);}
@@ -132,7 +132,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .tab{padding:3px 9px;border:none;border-radius:4px;background:transparent;color:var(--text2);font-size:12px;cursor:pointer;}
 .tab.on{background:var(--surface2);color:var(--text);font-weight:500;}
 #toolbar{padding:5px 10px;border-bottom:1px solid var(--border);display:flex;gap:3px;flex-wrap:wrap;background:var(--surface);flex-shrink:0;}
-.tb{padding:3px 6px;border:1px solid var(--border);border-radius:5px;background:transparent;color:var(--text2);font-size:12px;cursor:pointer;}
+.tb{padding:3px 6px;border:1px solid var(--border);border-radius:5px;background:transparent;color:var(--text2);font-size:12px;cursor:pointer;position:relative;}
+.tb:hover{background:var(--surface2);color:var(--text);}
+.tb[title]{position:relative;}
+.tb[title]:hover::after{content:attr(title);position:absolute;bottom:120%;left:50%;transform:translateX(-50%);background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:11px;white-space:nowrap;z-index:1000;box-shadow:0 4px 12px rgba(0,0,0,0.2);pointer-events:none;animation:tooltipFade .2s ease-out;}.tb[title]:hover::before{content:'';position:absolute;bottom:112%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--surface2);z-index:1000;}
+@keyframes tooltipFade{from{opacity:0;transform:translateX(-50%) translateY(4px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
 .tb:hover{background:var(--surface2);}
 .tsep{width:1px;background:var(--border);margin:0 2px;align-self:stretch;}
 @media(max-width:700px){.tb{padding:5px 7px;font-size:13px;}}
@@ -151,6 +155,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 #preview blockquote{border-left:3px solid var(--accent);padding-left:10px;color:var(--text2);margin-bottom:.5em;}
 #preview strong{font-weight:600;}
 #preview em{font-style:italic;}
+#preview .wiki-link{color:var(--accent);text-decoration:underline;cursor:pointer;border-bottom:1px dotted var(--accent);}
+#preview .wiki-link:hover{opacity:.8;}
+#preview .wiki-link-broken{color:var(--text2);opacity:.5;text-decoration:line-through;cursor:not-allowed;}
 #preview hr{border:none;border-top:1px solid var(--border);margin:.8em 0;}
 #preview code{font-family:'Courier New',monospace;font-size:.9em;background:var(--surface2);padding:1px 4px;border-radius:3px;}
 #preview pre{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-bottom:.8em;overflow-x:auto;position:relative;}
@@ -294,6 +301,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
   <div id="topbar">
     <button id="menu-btn" title="사이드바 토글">☰</button>
     <button id="save-btn" title="저장 (Ctrl+S)">💾 저장</button>
+    <span id="save-status" title="저장 상태" style="font-size:12px;color:var(--text2);display:none;margin-left:6px;">✓</span>
     <span id="sync-status"></span>
     <div id="topbar-right">
       <div class="tbtn on" data-t="light" id="tb-beige" title="베이지"></div>
@@ -320,6 +328,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
       <div class="sec-label">태그</div>
       <div id="tag-area"></div>
       <div id="tag-note-resizer"></div>
+      <div style="display:flex;align-items:center;gap:6px;padding:6px 8px;border-bottom:1px solid var(--border);">
+        <span style="font-size:11px;color:var(--text2);">정렬:</span>
+        <select id="sort-sel" style="flex:1;padding:4px;font-size:12px;border:1px solid var(--border);border-radius:5px;background:var(--surface);color:var(--text);outline:none;">
+          <option value="newest">최신순</option>
+          <option value="oldest">오래된순</option>
+          <option value="title">제목순</option>
+          <option value="updated">수정순</option>
+        </select>
+      </div>
       <div id="note-list"></div>
       <div id="sb-btns">
         <button id="new-btn">+ 새 노트</button>
@@ -341,23 +358,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
         </div>
       </div>
       <div id="toolbar">
-        <button class="tb" data-a="bold"><b>B</b></button>
-        <button class="tb" data-a="italic"><i>I</i></button>
-        <button class="tb" data-a="h1">H1</button>
-        <button class="tb" data-a="h2">H2</button>
-        <button class="tb" data-a="h3">H3</button>
+        <button class="tb" data-a="bold" title="굵게 (Ctrl+B)"><b>B</b></button>
+        <button class="tb" data-a="italic" title="기울임 (Ctrl+I)"><i>I</i></button>
+        <button class="tb" data-a="h1" title="제목1 (Ctrl+Shift+1)">H1</button>
+        <button class="tb" data-a="h2" title="제목2 (Ctrl+Shift+2)">H2</button>
+        <button class="tb" data-a="h3" title="제목3 (Ctrl+Shift+3)">H3</button>
         <span class="tsep"></span>
-        <button class="tb" data-a="ul">목록</button>
-        <button class="tb" data-a="task">☑</button>
-        <button class="tb" data-a="quote">"</button>
+        <button class="tb" data-a="ul" title="목록 (Ctrl+Shift+L)">목록</button>
+        <button class="tb" data-a="task" title="체크박스 (Ctrl+Shift+K)">☑</button>
+        <button class="tb" data-a="quote" title="인용 (Ctrl+Shift+Q)">"</button>
         <span class="tsep"></span>
-        <button class="tb" data-a="code">&lt;/&gt;</button>
-        <button class="tb" data-a="codeblock">블록</button>
-        <button class="tb" data-a="hr">—</button>
+        <button class="tb" data-a="code" title="코드 (Ctrl+`)"><</button>
+        <button class="tb" data-a="codeblock" title="코드블록 (Ctrl+Alt+C)">블록</button>
+        <button class="tb" data-a="hr" title="수평선 (Ctrl+Shift+H)">—</button>
         <span class="tsep"></span>
-        <button class="tb" data-a="table">표</button>
-        <button class="tb" data-a="link">🔗</button>
-        <button class="tb" data-a="attach">📎</button>
+        <button class="tb" data-a="table" title="표 (Ctrl+Shift+T)">표</button>
+        <button class="tb" data-a="link" title="링크 (Ctrl+Shift+U)">🔗</button>
+        <button class="tb" data-a="attach" title="첨부 (Ctrl+Shift+P)">📎</button>
         <input type="file" id="attach-file" style="display:none" multiple/>
       </div>
       <div id="ed-area">
@@ -577,6 +594,7 @@ let movingFolderId=null;
 let sidebarSizes={folderHeight:200,noteHeight:300};
 let draggedFolderId=null,draggedNoteIds=new Set(),selectedNoteIds=new Set();
 let dragOverFolderId=null;
+let sortBy='newest';
 
 // ── AES-256-GCM ───────────────────────────────────
 async function deriveKey(pw,salt){
@@ -977,6 +995,78 @@ function htmlToMd(html){
   }
   let md=[...tmp.childNodes].map(nm).join('');md=md.replace(/\n{3,}/g,'\n\n').trim();return md;
 }
+// ── 위키 링크 자동완성 ────────────────────────────
+let wikiAcEl=null;
+document.getElementById('md-ed').addEventListener('input',()=>{
+  updCur();
+  
+  const mdEd=document.getElementById('md-ed');
+  const s=mdEd.selectionStart;
+  const text=mdEd.value;
+  const beforeCursor=text.slice(0,s);
+  
+  // [[를 찾기
+  const lastBracket=beforeCursor.lastIndexOf('[[');
+  const hasClosing=beforeCursor.slice(lastBracket).includes(']]');
+  
+  if(lastBracket!==-1 && !hasClosing){
+    // [[ 이후의 텍스트 추출
+    const query=beforeCursor.slice(lastBracket+2).trim();
+    
+    // 자동완성 드롭다운 생성
+    if(!wikiAcEl){
+      wikiAcEl=document.createElement('div');
+      wikiAcEl.id='wiki-ac';
+      wikiAcEl.style.cssText='position:absolute;bottom:100%;left:14px;background:var(--surface);border:1px solid var(--border);border-radius:6px;font-size:12px;z-index:50;max-height:150px;overflow-y:auto;display:none;box-shadow:0 -4px 12px rgba(0,0,0,0.15);min-width:180px;';
+      mdEd.parentElement.style.position='relative';
+      mdEd.parentElement.appendChild(wikiAcEl);
+    }
+    
+    const matching=notes.filter(n=>
+      n.id!==cur && 
+      (query==='' || n.title.toLowerCase().includes(query.toLowerCase()))
+    ).slice(0,8);
+    
+    if(matching.length>0){
+      wikiAcEl.innerHTML='';
+      matching.forEach(n=>{
+        const item=document.createElement('div');
+        item.textContent=n.title;
+        item.style.cssText='padding:8px 10px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+        item.onmousedown=e=>{
+          e.preventDefault();
+          const beforeBracket=text.slice(0,lastBracket);
+          const afterCursor=text.slice(s);
+          mdEd.value=beforeBracket+'[['+n.title+']]'+afterCursor;
+          mdEd.selectionStart=mdEd.selectionEnd=beforeBracket.length+n.title.length+4;
+          wikiAcEl.style.display='none';
+          updCur();
+          if(!editMode)renderPrev();
+          mdEd.focus();
+        };
+        item.onmouseover=()=>item.style.background='var(--surface2)';
+        item.onmouseout=()=>item.style.background='';
+        wikiAcEl.appendChild(item);
+      });
+      wikiAcEl.style.display='block';
+    }else{
+      wikiAcEl.style.display='none';
+    }
+  }else{
+    if(wikiAcEl)wikiAcEl.style.display='none';
+  }
+});
+
+document.getElementById('md-ed').addEventListener('keydown',e=>{
+  if(e.key==='Escape' && wikiAcEl){
+    wikiAcEl.style.display='none';
+  }
+});
+
+document.getElementById('md-ed').addEventListener('blur',()=>{
+  if(wikiAcEl)setTimeout(()=>wikiAcEl.style.display='none',150);
+});
+
 document.getElementById('md-ed').addEventListener('paste',e=>{
   const html=e.clipboardData.getData('text/html'),text=e.clipboardData.getData('text/plain');
   if(html&&(html.includes('<table')||html.includes('<strong')||html.includes('<b>')||html.includes('<a ')||html.includes('<ul')||html.includes('<ol')||html.includes('<h1')||html.includes('<h2')||html.includes('<h3')||html.includes('<blockquote')||html.includes('<pre')||html.includes('<img'))){
@@ -1256,7 +1346,18 @@ window.restoreNote=function(i){notes.unshift(trash[i]);trash.splice(i,1);saveL()
 // ── 노트 ─────────────────────────────────────────
 function genId(){return 'n'+Date.now()+Math.random().toString(36).slice(2);}
 function defNotes(){return [{id:'demo1',title:'환영합니다! 📝',body:'# Notes 앱\n\n🔒 **AES-256 암호화** 보안\n\n- [x] ID + 비밀번호 로그인\n- [x] 사이드바 리사이즈 & 숨기기\n- [x] 폴더 이름변경 · 위치이동\n- [x] 폴더별 태그 필터링\n- [x] 맨위/맨아래 버튼 (↑↓)\n- [x] 테마 Gist 저장\n- [x] 새 노트 시 편집 모드 고정\n- [ ] 나만의 노트 작성',folder:'all',tags:['가이드'],created:Date.now(),favorite:false}];}
-function saveL(){localStorage.setItem(LK,JSON.stringify(notes));}
+
+function saveL(){
+  localStorage.setItem(LK,JSON.stringify(notes));
+  // 저장 상태 표시
+  const statusEl=document.getElementById('save-status');
+  if(statusEl){
+    statusEl.style.display='inline';
+    statusEl.textContent='✓';
+    statusEl.style.color='#4ade80';
+    statusEl.title='저장됨';
+  }
+}
 
 // 현재 폴더에 속한 태그만 반환
 function tagsForFolder(){
@@ -1270,13 +1371,21 @@ function tagsForFolder(){
 }
 
 function filtered(){
-  return notes.filter(n=>{
+  let result=notes.filter(n=>{
     if(afolder==='fav')return n.favorite;
     if(afolder!=='all'&&n.folder!==afolder)return false;
     if(atag&&!(n.tags||[]).includes(atag))return false;
     if(sq){const q=sq.toLowerCase();if(!n.title.toLowerCase().includes(q)&&!n.body.toLowerCase().includes(q))return false;}
     return true;
-  }).sort((a,b)=>b.created-a.created);
+  });
+  
+  // 정렬 적용
+  if(sortBy==='newest')result.sort((a,b)=>b.created-a.created);
+  else if(sortBy==='oldest')result.sort((a,b)=>a.created-b.created);
+  else if(sortBy==='title')result.sort((a,b)=>((a.title||'').localeCompare(b.title||'')));
+  else if(sortBy==='updated')result.sort((a,b)=>(b.updated||b.created)-(a.updated||a.created));
+  
+  return result;
 }
 function renderAll(){renderList();renderTags();}
 function renderList(){
@@ -1440,7 +1549,10 @@ function normalizeTag(t){return t.trim().toLowerCase();}
 function addTag(t){t=normalizeTag(t);if(!t)return;const n=notes.find(x=>x.id===cur);if(!n)return;const existing=(n.tags||[]).map(x=>x.toLowerCase());if(!existing.includes(t)){n.tags=[...(n.tags||[]),t];saveL();}renderFTags(n.tags);renderTags();renderList();}
 function rmTag(t){const n=notes.find(x=>x.id===cur);if(!n)return;n.tags=(n.tags||[]).filter(x=>x!==t);saveL();renderFTags(n.tags);renderTags();renderList();}
 function updCur(){const n=notes.find(x=>x.id===cur);if(!n)return;n.body=document.getElementById('md-ed').value;n.title=document.getElementById('title-in').value;n.folder=document.getElementById('folder-sel').value;saveL();renderList();if(!editMode)renderPrev();}
-document.getElementById('md-ed').oninput=updCur;document.getElementById('title-in').oninput=updCur;document.getElementById('folder-sel').onchange=updCur;
+document.getElementById('md-ed').oninput=updCur;
+document.getElementById('title-in').oninput=updCur;
+document.getElementById('title-in').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();document.getElementById('md-ed').focus();}};
+document.getElementById('folder-sel').onchange=updCur;
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();saveGist();}});
 
 // ── GitHub 파일 링크 해석 (서명 URL 만료 대응) ──────
@@ -1684,6 +1796,12 @@ function parseMd(raw){
     return gh?`<a href="#" data-gh-owner="${gh.owner}" data-gh-repo="${gh.repo}" data-gh-path="${encodeURIComponent(gh.path)}" onclick="openGhFile(this);return false;">${text}</a>`
              :`<a href="${href}" target="_blank" rel="noopener">${text}</a>`;
   });
+  // 위키식 링크 [[노트명]]
+  md=md.replace(/\[\[([^\]]+)\]\]/g,(m,noteTitle)=>{
+    const linked=notes.find(n=>n.title===noteTitle.trim());
+    if(linked)return `<a href="#" class="wiki-link" onclick="selNote('${linked.id}');return false;" title="이동: ${noteTitle}">${noteTitle}</a>`;
+    return `<span class="wiki-link-broken" title="노트를 찾을 수 없음">${noteTitle}</span>`;
+  });
   md=md.replace(/((?:^\|.+\|\n?)+)/gm,block=>{const rows=block.trim().split('\n');let html='<table>';let hd=true;rows.forEach(row=>{if(/^\|[\s\-:|]+\|$/.test(row.trim()))return;const cells=row.split('|').slice(1,-1).map(c=>c.trim());const tag=hd?'th':'td';html+='<tr>'+cells.map(c=>`<${tag}>${c}</${tag}>`).join('')+'</tr>';hd=false;});return html+'</table>';});
   md=md.replace(/^- \[x\] (.+)$/gm,'<div class="task-row"><input type="checkbox" checked onchange="tgTask(this,\'$1\')"> <span class="done">$1</span></div>');
   md=md.replace(/^- \[ \] (.+)$/gm,'<div class="task-row"><input type="checkbox" onchange="tgTask(this,\'$1\')"> <span>$1</span></div>');
@@ -1702,19 +1820,63 @@ function ins(text,wrap){const ta=document.getElementById('md-ed');const s=ta.sel
 function applyLinePrefix(prefix){const ta=document.getElementById('md-ed');const s=ta.selectionStart,e=ta.selectionEnd;const selected=ta.value.slice(s,e);if(!selected){ins(prefix);return;}const lines=selected.split('\n');const allHave=lines.every(l=>l.startsWith(prefix));const result=lines.map(l=>allHave?l.slice(prefix.length):prefix+l).join('\n');ta.value=ta.value.slice(0,s)+result+ta.value.slice(e);ta.selectionStart=s;ta.selectionEnd=s+result.length;ta.focus();updCur();}
 function applyInlineWrap(marker){const ta=document.getElementById('md-ed');const s=ta.selectionStart,e=ta.selectionEnd,sel=ta.value.slice(s,e);if(!sel){const p=s+marker.length;ta.value=ta.value.slice(0,s)+marker+marker+ta.value.slice(e);ta.selectionStart=ta.selectionEnd=p;ta.focus();return;}const already=sel.startsWith(marker)&&sel.endsWith(marker)&&sel.length>marker.length*2;const result=already?sel.slice(marker.length,sel.length-marker.length):marker+sel+marker;ta.value=ta.value.slice(0,s)+result+ta.value.slice(e);ta.selectionStart=s;ta.selectionEnd=s+result.length;ta.focus();updCur();}
 
-document.getElementById('toolbar').onclick=e=>{
-  const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
-  if(a==='bold'){applyInlineWrap('**');return;}if(a==='italic'){applyInlineWrap('*');return;}if(a==='code'){applyInlineWrap('`');return;}
-  if(a==='ul'){applyLinePrefix('- ');return;}if(a==='task'){applyLinePrefix('- [ ] ');return;}if(a==='quote'){applyLinePrefix('> ');return;}
-  if(a==='h1'){applyLinePrefix('# ');return;}if(a==='h2'){applyLinePrefix('## ');return;}if(a==='h3'){applyLinePrefix('### ');return;}
-  if(a==='codeblock'){ins('```\n\n```');return;}if(a==='hr'){ins('\n---\n');return;}if(a==='attach'){document.getElementById('attach-file').click();return;}
-  if(a==='link'){
+// ── 스타일 처리 함수 ──────────────────────────────
+function applyStyle(action){
+  if(action==='bold'){applyInlineWrap('**');return;}
+  if(action==='italic'){applyInlineWrap('*');return;}
+  if(action==='code'){applyInlineWrap('`');return;}
+  if(action==='ul'){applyLinePrefix('- ');return;}
+  if(action==='task'){applyLinePrefix('- [ ] ');return;}
+  if(action==='quote'){applyLinePrefix('> ');return;}
+  if(action==='h1'){applyLinePrefix('# ');return;}
+  if(action==='h2'){applyLinePrefix('## ');return;}
+  if(action==='h3'){applyLinePrefix('### ');return;}
+  if(action==='codeblock'){ins('```\n\n```');return;}
+  if(action==='hr'){ins('\n---\n');return;}
+  if(action==='attach'){document.getElementById('attach-file').click();return;}
+  if(action==='link'){
     const ta=document.getElementById('md-ed');const sel=ta.value.slice(ta.selectionStart,ta.selectionEnd).trim();
     document.getElementById('link-title-in').value=sel||'';document.getElementById('link-url-in').value='https://';
     openModal('link-modal');setTimeout(()=>{const f=sel?document.getElementById('link-url-in'):document.getElementById('link-title-in');f.focus();if(f.select)f.select();},100);return;
   }
-  if(a==='table'){const r=prompt('행 수:',3),c=prompt('열 수:',3);if(r&&c){const h='| '+Array(+c).fill('제목').join(' | ')+' |',sp='| '+Array(+c).fill('---').join(' | ')+' |',bd=Array(+r).fill('| '+Array(+c).fill('내용').join(' | ')+' |').join('\n');ins('\n'+h+'\n'+sp+'\n'+bd+'\n');}return;}
+  if(action==='table'){const r=prompt('행 수:',3),c=prompt('열 수:',3);if(r&&c){const h='| '+Array(+c).fill('제목').join(' | ')+' |',sp='| '+Array(+c).fill('---').join(' | ')+' |',bd=Array(+r).fill('| '+Array(+c).fill('내용').join(' | ')+' |').join('\n');ins('\n'+h+'\n'+sp+'\n'+bd+'\n');}return;}
+}
+
+document.getElementById('toolbar').onclick=e=>{
+  const b=e.target.closest('[data-a]');if(!b)return;
+  applyStyle(b.dataset.a);
 };
+
+// ── 단축키 처리 ───────────────────────────────────
+document.getElementById('md-ed').addEventListener('keydown',e=>{
+  if(!(e.ctrlKey||e.metaKey))return;
+  
+  // Ctrl+B: 굵게
+  if((e.ctrlKey||e.metaKey)&&e.key==='b'){e.preventDefault();applyStyle('bold');return;}
+  // Ctrl+I: 기울임
+  if((e.ctrlKey||e.metaKey)&&e.key==='i'){e.preventDefault();applyStyle('italic');return;}
+  // Ctrl+`: 코드
+  if((e.ctrlKey||e.metaKey)&&e.key==='`'){e.preventDefault();applyStyle('code');return;}
+  
+  // Ctrl+Shift 조합
+  if(e.ctrlKey&&e.shiftKey){
+    if(e.key==='1'){e.preventDefault();applyStyle('h1');return;}
+    if(e.key==='2'){e.preventDefault();applyStyle('h2');return;}
+    if(e.key==='3'){e.preventDefault();applyStyle('h3');return;}
+    if(e.key==='l'||e.key==='L'){e.preventDefault();applyStyle('ul');return;}
+    if(e.key==='k'||e.key==='K'){e.preventDefault();applyStyle('task');return;}
+    if(e.key==='q'||e.key==='Q'){e.preventDefault();applyStyle('quote');return;}
+    if(e.key==='h'||e.key==='H'){e.preventDefault();applyStyle('hr');return;}
+    if(e.key==='t'||e.key==='T'){e.preventDefault();applyStyle('table');return;}
+    if(e.key==='u'||e.key==='U'){e.preventDefault();applyStyle('link');return;}
+  }
+  
+  // Ctrl+Alt 조합
+  if(e.ctrlKey&&e.altKey){
+    if(e.key==='c'||e.key==='C'){e.preventDefault();applyStyle('codeblock');return;}
+  }
+});
+
 document.getElementById('link-ok-btn').onclick=()=>{
   const title=document.getElementById('link-title-in').value.trim(),url=document.getElementById('link-url-in').value.trim();
   if(!url){toast('URL을 입력하세요.');return;}
@@ -1758,6 +1920,7 @@ document.getElementById('del-btn').onclick=()=>{
 
 // ── 검색 / 모바일 ────────────────────────────────
 document.getElementById('search').oninput=e=>{sq=e.target.value.trim();renderAll();};
+document.getElementById('sort-sel').onchange=e=>{sortBy=e.target.value;renderAll();};
 const overlay=document.getElementById('overlay');
 overlay.onclick=closeSB;
 function closeSB(){
