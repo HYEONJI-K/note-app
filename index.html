@@ -1562,6 +1562,9 @@ function selNote(id){
   document.getElementById('folder-sel').value=n.folder||'all';
   renderFTags(n.tags||[]);renderList();
   if(!editMode)renderPrev();
+  // 스크롤을 맨 위로 이동
+  document.getElementById('md-ed').scrollTop=0;
+  if(document.getElementById('preview'))document.getElementById('preview').scrollTop=0;
 }
 function renderFTags(tags){
   const w=document.getElementById('tag-wrap');w.innerHTML='';
