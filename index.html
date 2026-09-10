@@ -143,9 +143,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 
 /* 에디터 영역 */
 #ed-area{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;position:relative;}
-#md-ed{flex:1;min-height:0;padding:12px 14px 40px;font-family:'Courier New',monospace;font-size:13px;line-height:var(--editor-lh,1.7);border:none;background:transparent;color:var(--text);resize:none;outline:none;overflow-y:auto;}
-@media(max-width:700px){#md-ed{font-size:15px;padding:10px 12px 40px;}}
-#preview{flex:1;min-height:0;padding:12px 14px 40px;overflow-y:auto;line-height:var(--preview-lh,1.6);font-size:13px;}
+#md-ed{flex:1;min-height:0;padding:12px 14px 50vh;font-family:'Courier New',monospace;font-size:13px;line-height:var(--editor-lh,1.7);border:none;background:transparent;color:var(--text);resize:none;outline:none;overflow-y:auto;}
+@media(max-width:700px){#md-ed{font-size:15px;padding:10px 12px 50vh;}}
+#preview{flex:1;min-height:0;padding:12px 14px 50vh;overflow-y:auto;line-height:var(--preview-lh,1.6);font-size:13px;}
 #preview h1{font-size:1.5em;font-weight:500;margin-bottom:.5em;border-bottom:1px solid var(--border);padding-bottom:.3em;}
 #preview h2{font-size:1.3em;font-weight:500;margin:.8em 0 .4em;}
 #preview h3{font-size:1.1em;font-weight:500;margin:.6em 0 .3em;}
@@ -301,6 +301,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
   <div id="topbar">
     <button id="menu-btn" title="사이드바 토글">☰</button>
     <button id="save-btn" title="저장 (Ctrl+S)">💾 저장</button>
+    <span id="save-status" title="저장 상태" style="font-size:12px;color:var(--text2);display:none;margin-left:6px;">✓</span>
     <span id="sync-status" style="flex:1;"></span>
     <div id="topbar-right">
       <div class="tbtn on" data-t="light" id="tb-beige" title="베이지"></div>
