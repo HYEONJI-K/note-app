@@ -437,10 +437,30 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
   <div class="modal-box">
     <h2>📁 폴더 이동</h2>
     <div style="font-size:12px;color:var(--text2);">이동할 위치 선택</div>
-    <select id="move-target-sel"></select>
+    <select id="move-target-sel" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px;"></select>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeModal('folder-move-modal')">취소</button>
       <button class="btn-ok" id="folder-move-ok-btn">이동</button>
+    </div>
+  </div>
+</div>
+
+<!-- 폴더 삭제 모달 -->
+<div id="folder-delete-modal" class="modal">
+  <div class="modal-box">
+    <h2>⚠️ 폴더 삭제</h2>
+    <div id="delete-folder-info" style="font-size:12px;color:var(--text2);background:var(--surface2);border-radius:8px;padding:10px;margin-bottom:10px;">
+      <div id="delete-folder-name"></div>
+      <div id="delete-folder-note-count" style="margin-top:4px;"></div>
+    </div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:8px;">
+      🔹 폴더에 있는 노트들을 먼저 다른 곳으로 옮겨야 합니다.
+    </div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:8px;">폴더의 노트를 옮길 위치:</div>
+    <select id="delete-folder-target-sel" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:12px;"></select>
+    <div class="modal-btns" style="margin-top:12px;">
+      <button class="btn-cancel" onclick="closeModal('folder-delete-modal')">취소</button>
+      <button class="btn-ok" id="folder-delete-ok-btn">옮기고 삭제</button>
     </div>
   </div>
 </div>
@@ -952,7 +972,7 @@ function findParent(list,id,parent=null){for(const f of(list||[])){if(f.id===id)
 // 폴더 삭제 (재귀)
 function removeFolder(list,id){return list.filter(f=>{f.children=removeFolder(f.children||[],id);return f.id!==id;});}
 // 폴더에서 꺼내기
-function extractFolder(list,id){let extracted=null;function rem(arr){return arr.filter(f=>{if(f.id===id){extracted=f;return false;}f.children=rem(f.children||[]);return true;});}rem(list);return extracted;}
+function extractFolder(list,id){let extracted=null;function rem(arr){return arr.filter(f=>{if(f.id===id){extracted=f;return false;}f.children=rem(f.children||[]);return true;});}list.splice(0,list.length,...rem(list));return extracted;}
 
 function renderFolders(){
   const tree=document.getElementById('folder-tree');tree.innerHTML='';
@@ -1037,17 +1057,108 @@ window.moveFolderModal=function(id){
 document.getElementById('folder-move-ok-btn').onclick=()=>{
   if(!movingFolderId)return;
   const targetId=document.getElementById('move-target-sel').value;
-  // 이동할 폴더를 추출
+  
+  // 이동할 폴더를 추출 (기존 위치에서 제거됨)
   const extracted=extractFolder(folders,movingFolderId);
-  if(!extracted){toast('오류: 폴더를 찾을 수 없습니다.');closeModal('folder-move-modal');return;}
-  if(targetId==='root'){folders.push(extracted);}
-  else{const target=findFolderDeep(folders,targetId);if(target){if(!target.children)target.children=[];target.children.push(extracted);}else folders.push(extracted);}
-  movingFolderId=null;saveF();renderFolders();closeModal('folder-move-modal');toast('폴더 이동 완료!');
+  if(!extracted){
+    toast('오류: 폴더를 찾을 수 없습니다.');
+    closeModal('folder-move-modal');
+    return;
+  }
+  
+  // 새로운 위치에 추가
+  if(targetId==='root'){
+    folders.push(extracted);
+  }else{
+    const target=findFolderDeep(folders,targetId);
+    if(target){
+      if(!target.children)target.children=[];
+      target.children.push(extracted);
+    }else{
+      // 대상 폴더를 찾을 수 없으면 루트에 추가
+      folders.push(extracted);
+    }
+  }
+  
+  movingFolderId=null;
+  saveF();
+  renderFolders();
+  closeModal('folder-move-modal');
+  toast('폴더 이동 완료!');
 };
 
+let deletingFolderId=null;
+
 window.delFolder=function(id){
-  if(!confirm('폴더를 삭제할까요?\n(노트는 삭제되지 않습니다)'))return;
-  folders=removeFolder(folders,id);saveF();renderFolders();if(afolder===id){afolder='all';renderAll();}toast('폴더 삭제 완료');
+  deletingFolderId=id;
+  
+  // 삭제할 폴더 정보 가져오기
+  const folder=findFolderDeep(folders,id);
+  if(!folder){toast('폴더를 찾을 수 없습니다.');return;}
+  
+  // 이 폴더에 있는 노트 개수 세기
+  const notesInFolder=notes.filter(n=>n.folder===id).length;
+  
+  if(notesInFolder===0){
+    // 노트가 없으면 바로 삭제
+    if(!confirm(`📁 "${folder.name}" 폴더를 삭제할까요?`))return;
+    folders=removeFolder(folders,id);
+    saveF();renderFolders();
+    if(afolder===id){afolder='all';renderAll();}
+    toast('폴더 삭제 완료');
+    return;
+  }
+  
+  // 노트가 있으면 이동할 위치 선택하게 하기
+  const infoEl=document.getElementById('delete-folder-name');
+  infoEl.textContent=`📁 ${folder.name}`;
+  
+  const countEl=document.getElementById('delete-folder-note-count');
+  countEl.innerHTML=`<span style="color:var(--danger);font-weight:500;">⚠️ ${notesInFolder}개의 노트가 있습니다</span>`;
+  
+  // 목표 폴더 선택지 구성
+  const sel=document.getElementById('delete-folder-target-sel');
+  sel.innerHTML='<option value="">-- 선택하세요 --</option>';
+  sel.innerHTML+='<option value="all">📋 전체 노트 (폴더 지정 안 함)</option>';
+  
+  flatFolders(folders).forEach(f=>{
+    if(f.id===id)return; // 삭제할 폴더 제외
+    const o=document.createElement('option');
+    o.value=f.id;
+    o.textContent='　'.repeat(f.depth)+'📁 '+f.name;
+    sel.appendChild(o);
+  });
+  
+  openModal('folder-delete-modal');
+};
+
+document.getElementById('folder-delete-ok-btn').onclick=()=>{
+  const targetId=document.getElementById('delete-folder-target-sel').value;
+  
+  if(!targetId){
+    toast('이동할 위치를 선택하세요.');
+    return;
+  }
+  
+  if(!deletingFolderId)return;
+  
+  // 이 폴더에 있는 모든 노트를 새 폴더로 이동
+  notes.forEach(n=>{
+    if(n.folder===deletingFolderId){
+      n.folder=targetId;
+    }
+  });
+  
+  // 폴더 삭제
+  folders=removeFolder(folders,deletingFolderId);
+  
+  deletingFolderId=null;
+  saveL();
+  saveF();
+  renderFolders();
+  renderAll();
+  closeModal('folder-delete-modal');
+  toast('노트를 이동하고 폴더를 삭제했습니다!');
 };
 
 // ── 휴지통 ─────────────────────────────────────────
