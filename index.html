@@ -302,7 +302,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
     <button id="menu-btn" title="사이드바 토글">☰</button>
     <button id="save-btn" title="저장 (Ctrl+S)">💾 저장</button>
     <span id="save-status" title="저장 상태" style="font-size:12px;color:var(--text2);display:none;margin-left:6px;">✓</span>
-    <span id="sync-status"></span>
+    <span id="sync-status" style="flex:1;"></span>
     <div id="topbar-right">
       <div class="tbtn on" data-t="light" id="tb-beige" title="베이지"></div>
       <div class="tbtn" data-t="light-white" id="tb-white" title="화이트"></div>
@@ -325,7 +325,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
       <div class="sec-label">폴더</div>
       <div id="folder-tree"></div>
       <div id="folder-tag-resizer"></div>
-      <div class="sec-label">태그</div>
+      <div class="sec-label" id="tag-toggle" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;">
+        <span><span id="tag-toggle-icon">▼</span> 태그</span>
+      </div>
       <div id="tag-area"></div>
       <div id="tag-note-resizer"></div>
       <div style="display:flex;align-items:center;gap:6px;padding:6px 8px;border-bottom:1px solid var(--border);">
@@ -595,6 +597,7 @@ let sidebarSizes={folderHeight:200,noteHeight:300};
 let draggedFolderId=null,draggedNoteIds=new Set(),selectedNoteIds=new Set();
 let dragOverFolderId=null;
 let sortBy='newest';
+let tagExpanded=true;
 
 // ── AES-256-GCM ───────────────────────────────────
 async function deriveKey(pw,salt){
@@ -1184,6 +1187,40 @@ window.toggleFolderExpand=function(id){
     renderFolders();
   }
 };
+
+// ── 태그 접기/펼치기 ──────────────────────────────────
+window.toggleTagArea=function(){
+  tagExpanded=!tagExpanded;
+  const tagArea=document.getElementById('tag-area');
+  const icon=document.getElementById('tag-toggle-icon');
+  const tagResizer=document.getElementById('tag-note-resizer');
+  
+  if(tagExpanded){
+    tagArea.style.display='';
+    tagResizer.style.display='';
+    icon.textContent='▼';
+  }else{
+    tagArea.style.display='none';
+    tagResizer.style.display='none';
+    icon.textContent='▶';
+  }
+  localStorage.setItem('tag-expanded',JSON.stringify(tagExpanded));
+};
+
+// 초기 상태 로드
+function loadTagExpandState(){
+  const saved=localStorage.getItem('tag-expanded');
+  if(saved!==null){
+    tagExpanded=JSON.parse(saved);
+    if(!tagExpanded){
+      document.getElementById('tag-area').style.display='none';
+      document.getElementById('tag-note-resizer').style.display='none';
+      document.getElementById('tag-toggle-icon').textContent='▶';
+    }
+  }
+}
+
+document.getElementById('tag-toggle').onclick=()=>{window.toggleTagArea();};
 
 document.getElementById('folder-ok-btn').onclick=()=>{
   const name=document.getElementById('folder-name-in').value.trim();if(!name){toast('폴더 이름을 입력하세요.');return;}
@@ -2014,6 +2051,7 @@ document.addEventListener('mouseup',()=>{
 
 // 초기화
 loadSidebarSizes();
+loadTagExpandState();
 
 // ── 내보내기 / 불러오기 ──────────────────────────
 function dlFile(c,n,t){const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([c],{type:t})),download:n});a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
