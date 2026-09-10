@@ -41,6 +41,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 #topbar{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
 #menu-btn{padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:transparent;cursor:pointer;font-size:17px;color:var(--text);flex-shrink:0;}
 #topbar h1{font-size:15px;font-weight:500;flex:1;min-width:0;}
+#save-btn{flex:1;min-width:0;text-align:left;background:transparent;border:1px solid transparent;color:var(--text);font-size:15px;font-weight:500;cursor:pointer;padding:6px 8px;border-radius:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#save-btn:hover{background:var(--surface2);}
+#save-btn:active{background:var(--accent-bg);color:var(--accent);border-color:var(--accent);}
+#save-btn.saving{color:var(--text2);}
 #sync-status{font-size:11px;color:var(--text2);white-space:nowrap;}
 #topbar-right{display:flex;align-items:center;gap:4px;flex-shrink:0;}
 .icon-btn{width:28px;height:28px;border:none;border-radius:6px;background:transparent;cursor:pointer;color:var(--text);font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -100,7 +104,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
   #sidebar.hidden{transform:translateX(-110%)!important;width:80vw!important;}
   #sidebar-resize{display:none;}
   .tbtn{width:16px;height:16px;}
-  #topbar h1{font-size:13px;}
+  #save-btn{font-size:13px;padding:6px 8px;}
 }
 
 /* 메인 에디터 */
@@ -263,7 +267,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 <div id="app">
   <div id="topbar">
     <button id="menu-btn" title="사이드바 토글">☰</button>
-    <h1>📝 Notes</h1>
+    <button id="save-btn" title="저장 (Ctrl+S)">💾 저장</button>
     <span id="sync-status"></span>
     <div id="topbar-right">
       <div class="tbtn on" data-t="light" id="tb-beige" title="베이지"></div>
@@ -728,6 +732,7 @@ async function loadGist(){
 
 async function saveGist(){
   setSS('저장 중...');
+  const sb=document.getElementById('save-btn');sb.classList.add('saving');sb.textContent='💾 저장 중...';
   // 테마 등 설정도 함께 저장
   const settings={theme:localStorage.getItem('s-theme')||'light'};
   const content=JSON.stringify({version:3,saved:new Date().toISOString(),notes,folders,settings},null,2);
@@ -737,9 +742,11 @@ async function saveGist(){
     localStorage.setItem(LK,JSON.stringify(notes));localStorage.setItem(FK,JSON.stringify(folders));
     setSS('✓ 동기화됨 · '+new Date().toLocaleTimeString());toast('☁ 저장 완료');
   }catch{setSS('⚠ 저장 실패');toast('저장 실패');}
+  finally{sb.classList.remove('saving');sb.textContent='💾 저장';}
 }
 
 document.getElementById('sync-btn').onclick=saveGist;
+document.getElementById('save-btn').onclick=saveGist;
 document.getElementById('logout-btn').onclick=()=>{
   if(!confirm('이 기기에서 로그아웃할까요?'))return;
   ['sid','sgid'].forEach(k=>localStorage.removeItem(k));localStorage.removeItem('stok_'+myId);localStorage.removeItem('smgid_'+myId);
@@ -777,7 +784,7 @@ async function loadSharedNote(gid,nid){
     const p=JSON.parse(c);const arr=Array.isArray(p)?p:(p.notes||[]);
     const note=arr.find(n=>n.id===nid);if(!note)throw new Error('노트를 찾을 수 없습니다.');
     document.getElementById('share-title').textContent=note.title||'제목 없음';
-    document.getElementById('share-content').innerHTML=parseMd(note.body);
+    const sc=document.getElementById('share-content');sc.innerHTML=parseMd(note.body);resolveGhImages(sc);
   }catch(e){document.getElementById('share-content').innerHTML=`<p style="padding:20px;color:#dc2626;">오류: ${e.message}</p>`;}
 }
 
@@ -803,7 +810,7 @@ function uploadFileToRepo(file){
       const xhr=new XMLHttpRequest();xhr.open('PUT',`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`);
       xhr.setRequestHeader('Authorization',`token ${token}`);xhr.setRequestHeader('Content-Type','application/json');
       xhr.upload.onprogress=e=>{if(e.lengthComputable)showProgress(file.name,40+(e.loaded/e.total)*60);};
-      xhr.onload=()=>{if(xhr.status>=200&&xhr.status<300){const d=JSON.parse(xhr.responseText);hideProgress();resolve({name:file.name,path,url:d.content.download_url,size:file.size,sha:d.content.sha});}else{hideProgress();try{toast('업로드 실패: '+JSON.parse(xhr.responseText).message);}catch{toast('업로드 오류');}resolve(null);}};
+      xhr.onload=()=>{if(xhr.status>=200&&xhr.status<300){const d=JSON.parse(xhr.responseText);hideProgress();resolve({name:file.name,path,owner:repoOwner,repo:repoName,url:d.content.download_url,size:file.size,sha:d.content.sha});}else{hideProgress();try{toast('업로드 실패: '+JSON.parse(xhr.responseText).message);}catch{toast('업로드 오류');}resolve(null);}};
       xhr.onerror=()=>{hideProgress();toast('네트워크 오류');resolve(null);};
       xhr.send(JSON.stringify({message:`Upload ${file.name}`,content:base64}));
     };
@@ -819,10 +826,10 @@ async function refreshFileList(){
   if(!repoOwner||!repoName){el.innerHTML='<div style="padding:10px;text-align:center;color:var(--text2);font-size:12px;">⚙ 설정에서 저장소를 먼저 설정하세요.</div>';return;}
   const files=await listRepoFiles();el.innerHTML='';
   if(!files.length){el.innerHTML='<div style="padding:10px;text-align:center;color:var(--text2);font-size:12px;">파일 없음</div>';return;}
-  files.forEach(f=>{const d=document.createElement('div');d.className='file-item';d.innerHTML=`<div class="file-item-icon">${fileIcon(f.name)}</div><div class="file-item-info"><div class="file-item-name">${f.name}</div><div class="file-item-size">${fmtSize(f.size||0)}</div></div><div class="file-item-btns">${isImg(f.name)?`<button onclick="iImg('${f.download_url}','${f.name}')">삽입</button>`:''}<button onclick="iLink2('${f.download_url}','${f.name}')">링크</button><button onclick="window.open('${f.download_url}','_blank')">다운</button><button onclick="dFile('${f.path}','${f.sha}')" style="color:var(--danger);">삭제</button></div>`;el.appendChild(d);});
+  files.forEach(f=>{const d=document.createElement('div');d.className='file-item';d.innerHTML=`<div class="file-item-icon">${fileIcon(f.name)}</div><div class="file-item-info"><div class="file-item-name">${f.name}</div><div class="file-item-size">${fmtSize(f.size||0)}</div></div><div class="file-item-btns">${isImg(f.name)?`<button onclick="iImg('${encodeURIComponent(f.path)}','${f.name}')">삽입</button>`:''}<button onclick="iLink2('${encodeURIComponent(f.path)}','${f.name}')">링크</button><button onclick="window.open('${f.download_url}','_blank')">다운</button><button onclick="dFile('${f.path}','${f.sha}')" style="color:var(--danger);">삭제</button></div>`;el.appendChild(d);});
 }
-window.iImg=function(url,name){ins(`\n![${name}](${url})\n`);closeModal('file-modal');toast('이미지 삽입');};
-window.iLink2=function(url,name){ins(`[${name}](${url})`);closeModal('file-modal');toast('링크 삽입');};
+window.iImg=function(path,name){ins(`\n![${name}](gh-file://${repoOwner}/${repoName}/${decodeURIComponent(path)})\n`);closeModal('file-modal');toast('이미지 삽입');};
+window.iLink2=function(path,name){ins(`[${name}](gh-file://${repoOwner}/${repoName}/${decodeURIComponent(path)})`);closeModal('file-modal');toast('링크 삽입');};
 window.dFile=async function(path,sha){if(!confirm('파일을 삭제할까요?'))return;await deleteRepoFile(path,sha);toast('삭제됨');await refreshFileList();};
 
 const uploadZone=document.getElementById('file-upload-zone'),uploadInput=document.getElementById('file-upload-input');
@@ -830,7 +837,7 @@ uploadZone.onclick=()=>uploadInput.click();uploadZone.ondragover=e=>{e.preventDe
 uploadZone.ondrop=async e=>{e.preventDefault();uploadZone.classList.remove('drag');await handleUpload([...e.dataTransfer.files]);};
 uploadInput.onchange=async e=>{await handleUpload([...e.target.files]);e.target.value='';};
 async function handleUpload(files){if(!files.length)return;let ok=0;for(const f of files){const r=await uploadFileToRepo(f);if(r)ok++;}if(ok>0){toast(`${ok}개 업로드 완료!`);await refreshFileList();}}
-document.getElementById('attach-file').onchange=async e=>{const files=[...e.target.files];if(!files.length)return;for(const f of files){const r=await uploadFileToRepo(f);if(r){if(isImg(f.name))ins(`\n![${f.name}](${r.url})\n`);else ins(`[${f.name}](${r.url})`);}}e.target.value='';toast('첨부 완료!');};
+document.getElementById('attach-file').onchange=async e=>{const files=[...e.target.files];if(!files.length)return;for(const f of files){const r=await uploadFileToRepo(f);if(r){const ghsrc=`gh-file://${r.owner}/${r.repo}/${r.path}`;if(isImg(f.name))ins(`\n![${f.name}](${ghsrc})\n`);else ins(`[${f.name}](${ghsrc})`);}}e.target.value='';toast('첨부 완료!');};
 
 // ── HTML → MD 붙여넣기 ─────────────────────────────
 function htmlToMd(html){
@@ -1046,14 +1053,66 @@ function updCur(){const n=notes.find(x=>x.id===cur);if(!n)return;n.body=document
 document.getElementById('md-ed').oninput=updCur;document.getElementById('title-in').oninput=updCur;document.getElementById('folder-sel').onchange=updCur;
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();saveGist();}});
 
+// ── GitHub 파일 링크 해석 (서명 URL 만료 대응) ──────
+// 업로드된 이미지/파일은 gh-file://owner/repo/path 형태로 노트에 저장하고,
+// 실제 표시/열람 시점에 매번 새로운 다운로드 URL을 받아온다.
+// 예전에 저장된 raw.githubusercontent.com 서명 URL(시간 만료됨)도 자동으로 인식해 복구한다.
+function parseGhSrc(url){
+  if(url.startsWith('gh-file://')){
+    const rest=url.slice('gh-file://'.length);
+    const i1=rest.indexOf('/'),i2=rest.indexOf('/',i1+1);
+    if(i1<0||i2<0)return null;
+    return{owner:rest.slice(0,i1),repo:rest.slice(i1+1,i2),path:rest.slice(i2+1)};
+  }
+  const m=url.match(/^https?:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/[^/]+\/([^?]+)/);
+  if(m)return{owner:m[1],repo:m[2],path:decodeURIComponent(m[3])};
+  return null;
+}
+const GH_PIXEL='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBTAA7';
+const ghUrlCache=new Map();
+async function fetchGhDownloadUrl(owner,repo,path){
+  const key=owner+'/'+repo+'/'+path;
+  const cached=ghUrlCache.get(key);if(cached)return cached;
+  const headers=token?{Authorization:`token ${token}`}:{};
+  const encPath=path.split('/').map(encodeURIComponent).join('/');
+  const r=await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${encPath}`,{headers});
+  if(!r.ok)throw new Error('not found');
+  const d=await r.json();if(!d.download_url)throw new Error('no url');
+  ghUrlCache.set(key,d.download_url);setTimeout(()=>ghUrlCache.delete(key),4*60*1000);
+  return d.download_url;
+}
+async function resolveGhImages(root){
+  const imgs=[...root.querySelectorAll('img[data-gh-owner]')];
+  await Promise.all(imgs.map(async img=>{
+    const owner=img.dataset.ghOwner,repo=img.dataset.ghRepo,path=decodeURIComponent(img.dataset.ghPath);
+    try{img.src=await fetchGhDownloadUrl(owner,repo,path);}
+    catch{img.alt='⚠ 이미지를 불러올 수 없습니다';img.style.cssText+='opacity:.5;min-height:60px;background:var(--surface2);';}
+  }));
+}
+window.openGhFile=async function(el){
+  const owner=el.dataset.ghOwner,repo=el.dataset.ghRepo,path=decodeURIComponent(el.dataset.ghPath);
+  try{const url=await fetchGhDownloadUrl(owner,repo,path);window.open(url,'_blank');}
+  catch{toast('파일을 불러올 수 없습니다.');}
+};
+
 // ── 마크다운 파서 ──────────────────────────────────
 function parseMd(raw){
   if(!raw||!raw.trim())return '<p style="color:var(--text2);font-size:13px;">내용을 입력하면 미리보기가 표시됩니다.</p>';
   const codes={};let md=raw.replace(/```([\s\S]*?)```/g,(m,inner)=>{const k='__C'+(Object.keys(codes).length)+'__';const id='cb'+Math.random().toString(36).slice(2);const safe=inner.replace(/^[^\n]*\n?/,'').trimEnd().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');codes[k]=`<div class="cb-wrap"><pre><code id="${id}">${safe}</code></pre><button class="copy-btn" onclick="cpCode('${id}')">복사</button></div>`;return k;});
-  const imgs={};md=md.replace(/!\[([^\]]*)\]\((https?:\/\/[^)]+)\)/g,(m,alt,src)=>{const k='__I'+(Object.keys(imgs).length)+'__';imgs[k]=`<img src="${src}" alt="${alt}" style="max-width:100%;border-radius:6px;margin:4px 0;display:block;"/>`;return k;});
+  const imgs={};md=md.replace(/!\[([^\]]*)\]\(((?:https?|gh-file):\/\/[^)]+)\)/g,(m,alt,src)=>{
+    const k='__I'+(Object.keys(imgs).length)+'__';
+    const gh=parseGhSrc(src);
+    imgs[k]=gh?`<img data-gh-owner="${gh.owner}" data-gh-repo="${gh.repo}" data-gh-path="${encodeURIComponent(gh.path)}" src="${GH_PIXEL}" alt="${alt}" style="max-width:100%;border-radius:6px;margin:4px 0;display:block;"/>`
+             :`<img src="${src}" alt="${alt}" style="max-width:100%;border-radius:6px;margin:4px 0;display:block;"/>`;
+    return k;
+  });
   md=md.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   md=md.replace(/^#{3} (.+)$/gm,'<h3>$1</h3>').replace(/^#{2} (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>').replace(/^---$/gm,'<hr>').replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/`([^`\n]+)`/g,'<code>$1</code>');
-  md=md.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  md=md.replace(/\[([^\]]+)\]\(((?:https?|gh-file):\/\/[^)]+)\)/g,(m,text,href)=>{
+    const gh=parseGhSrc(href);
+    return gh?`<a href="#" data-gh-owner="${gh.owner}" data-gh-repo="${gh.repo}" data-gh-path="${encodeURIComponent(gh.path)}" onclick="openGhFile(this);return false;">${text}</a>`
+             :`<a href="${href}" target="_blank" rel="noopener">${text}</a>`;
+  });
   md=md.replace(/((?:^\|.+\|\n?)+)/gm,block=>{const rows=block.trim().split('\n');let html='<table>';let hd=true;rows.forEach(row=>{if(/^\|[\s\-:|]+\|$/.test(row.trim()))return;const cells=row.split('|').slice(1,-1).map(c=>c.trim());const tag=hd?'th':'td';html+='<tr>'+cells.map(c=>`<${tag}>${c}</${tag}>`).join('')+'</tr>';hd=false;});return html+'</table>';});
   md=md.replace(/^- \[x\] (.+)$/gm,'<div class="task-row"><input type="checkbox" checked onchange="tgTask(this,\'$1\')"> <span class="done">$1</span></div>');
   md=md.replace(/^- \[ \] (.+)$/gm,'<div class="task-row"><input type="checkbox" onchange="tgTask(this,\'$1\')"> <span>$1</span></div>');
@@ -1063,7 +1122,7 @@ function parseMd(raw){
   Object.entries(codes).forEach(([k,v])=>{md=md.split(k).join(v);});Object.entries(imgs).forEach(([k,v])=>{md=md.split(k).join(v);});
   return md;
 }
-function renderPrev(){document.getElementById('preview').innerHTML=parseMd(document.getElementById('md-ed').value);}
+function renderPrev(){const el=document.getElementById('preview');el.innerHTML=parseMd(document.getElementById('md-ed').value);resolveGhImages(el);}
 window.cpCode=id=>{const el=document.getElementById(id);if(!el)return;navigator.clipboard.writeText(el.textContent);const b=el.closest('.cb-wrap')?.querySelector('.copy-btn');if(b){b.textContent='복사됨!';setTimeout(()=>b.textContent='복사',1500);}};
 window.tgTask=(cb,text)=>{const n=notes.find(x=>x.id===cur);if(!n)return;n.body=cb.checked?n.body.replace(`- [ ] ${text}`,`- [x] ${text}`):n.body.replace(`- [x] ${text}`,`- [ ] ${text}`);document.getElementById('md-ed').value=n.body;saveL();renderPrev();};
 
