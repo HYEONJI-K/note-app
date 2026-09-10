@@ -148,7 +148,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .done{text-decoration:line-through;color:var(--text2);}
 .cb-wrap{position:relative;}
 .copy-btn{position:absolute;top:5px;right:5px;padding:2px 7px;font-size:11px;border:1px solid var(--border);border-radius:3px;background:var(--surface);color:var(--text2);cursor:pointer;}
-#preview img{max-width:100%;border-radius:6px;margin:4px 0;display:block;}
+#preview img{max-width:100%;border-radius:6px;margin:4px 0;display:block;background:var(--surface2);}
+#preview img:invalid,#preview img[alt*="⚠"]{min-height:80px;opacity:.5;padding:20px;box-sizing:border-box;text-align:center;}
 #preview a{color:var(--accent);text-decoration:underline;}
 
 /* 맨위/맨아래 버튼 */
@@ -1144,8 +1145,19 @@ async function resolveGhImages(root){
   const imgs=[...root.querySelectorAll('img[data-gh-owner]')];
   await Promise.all(imgs.map(async img=>{
     const owner=img.dataset.ghOwner,repo=img.dataset.ghRepo,path=decodeURIComponent(img.dataset.ghPath);
-    try{img.src=await fetchGhDownloadUrl(owner,repo,path);}
-    catch(e){console.warn('이미지 로드 실패:',owner,repo,path,e);img.alt='⚠ 이미지를 불러올 수 없습니다';img.style.cssText+='opacity:.5;min-height:60px;background:var(--surface2);';}
+    try{
+      const url=await fetchGhDownloadUrl(owner,repo,path);
+      img.src=url;
+      img.onerror=function(){
+        this.alt='⚠ 이미지를 불러올 수 없습니다';
+        this.style.cssText='opacity:.5;min-height:80px;background:var(--surface2);padding:20px;text-align:center;display:flex;align-items:center;justify-content:center;';
+      };
+    }
+    catch(e){
+      console.warn('이미지 로드 실패:',owner,repo,path,e);
+      img.alt='⚠ 이미지 경로를 찾을 수 없습니다';
+      img.style.cssText='opacity:.5;min-height:80px;background:var(--surface2);padding:20px;text-align:center;display:flex;align-items:center;justify-content:center;';
+    }
   }));
 }
 window.openGhFile=async function(el){
@@ -1177,7 +1189,7 @@ function parseMd(raw){
     const k='__I'+idx+'__';
     const gh=parseGhSrc(src);
     const sizeStyle=imgSizeStyle(size);
-    const common=`data-img-idx="${idx}" data-img-size="${size||''}" onclick="openImgSizeModal(this)" style="${sizeStyle}border-radius:6px;margin:4px 0;display:block;cursor:zoom-in;"`;
+    const common=`data-img-idx="${idx}" data-img-size="${size||''}" onclick="openImgSizeModal(this)" style="${sizeStyle}border-radius:6px;margin:4px 0;display:block;cursor:zoom-in;" onerror="this.alt='⚠ 이미지를 불러올 수 없습니다'; this.style.opacity='0.5'; this.style.minHeight='80px'; this.style.background='var(--surface2)'; this.style.padding='20px';"`;
     imgs[k]=gh?`<img data-gh-owner="${gh.owner}" data-gh-repo="${gh.repo}" data-gh-path="${encodeURIComponent(gh.path)}" src="${GH_PIXEL}" alt="${alt}" ${common}/>`
              :`<img src="${src}" alt="${alt}" ${common}/>`;
     return k;
