@@ -367,9 +367,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
         <span class="tsep"></span>
         <button class="tb" data-a="ul" title="목록 (Ctrl+Shift+L)">목록</button>
         <button class="tb" data-a="task" title="체크박스 (Ctrl+Shift+K)">☑</button>
-        <button class="tb" data-a="quote" title="인용 (Ctrl+Shift+Q)">"</button>
+        <button class="tb" data-a="quote" title="인용 (Ctrl+Shift+Q)">인용</button>
         <span class="tsep"></span>
-        <button class="tb" data-a="code" title="코드 (Ctrl+`)"><</button>
+        <button class="tb" data-a="code" title="코드 (Ctrl+`)">코드</button>
         <button class="tb" data-a="codeblock" title="코드블록 (Ctrl+Alt+C)">블록</button>
         <button class="tb" data-a="hr" title="수평선 (Ctrl+Shift+H)">—</button>
         <span class="tsep"></span>
@@ -1865,8 +1865,20 @@ function applyStyle(action){
   if(action==='codeblock'){
     const ta=document.getElementById('md-ed');
     const s=ta.selectionStart,e=ta.selectionEnd,sel=ta.value.slice(s,e);
-    const content=sel?('\n'+sel+'\n'):'';
-    ins('```'+content+'```',false);
+    if(sel){
+      // 선택된 내용이 있으면 보존
+      const wrapped='```\n'+sel+'\n```';
+      ta.value=ta.value.slice(0,s)+wrapped+ta.value.slice(e);
+      ta.selectionStart=s;
+      ta.selectionEnd=s+wrapped.length;
+    }else{
+      // 선택된 내용이 없으면 새로 삽입
+      ta.value=ta.value.slice(0,s)+'\n```\n\n```\n'+ta.value.slice(e);
+      ta.selectionStart=s+5;
+      ta.selectionEnd=s+5;
+    }
+    ta.focus();
+    updCur();
     return;
   }
   if(action==='hr'){ins('\n---\n');return;}
