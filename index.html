@@ -305,6 +305,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
     <button id="save-btn" title="저장 (Ctrl+S)">💾 저장</button>
     <span id="sync-status" style="flex:1;"></span>
     <div id="topbar-right">
+      <button class="icon-btn" id="shortcuts-btn" title="단축키 가이드" style="font-size:12px;">⌨ 단축키</button>
       <div class="tbtn on" data-t="light" id="tb-beige" title="베이지"></div>
       <div class="tbtn" data-t="light-white" id="tb-white" title="화이트"></div>
       <div class="tbtn" data-t="light-green" id="tb-green" title="그린"></div>
@@ -312,7 +313,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
       <button class="icon-btn" id="new-folder-btn" title="새 폴더">📁+</button>
       <button class="icon-btn" id="share-note-btn" title="노트 링크 공유">🔗</button>
       <button class="icon-btn" id="file-mgr-btn" title="파일 관리">📎</button>
-      <button class="icon-btn" id="shortcuts-btn" title="단축키 가이드">⌨</button>
       <button class="icon-btn" id="settings-btn" title="설정">⚙</button>
       <button class="icon-btn" id="trash-btn" title="휴지통">🗑</button>
       <img id="gh-avatar" src="" alt=""/>
@@ -357,8 +357,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
       <div id="ed-header">
         <input id="title-in" placeholder="제목 없음"/>
         <div class="tabs">
-          <button class="tab on" id="t-edit">편집</button>
-          <button class="tab" id="t-prev">미리보기</button>
+          <button class="tab on" id="t-edit" title="편집 모드 (Ctrl+E)">편집</button>
+          <button class="tab" id="t-prev" title="미리보기 모드 (Ctrl+Alt+V)">미리보기</button>
         </div>
       </div>
       <div id="toolbar">
@@ -393,7 +393,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
         <span style="font-size:13px;color:var(--text2);flex-shrink:0;">🏷</span>
         <div id="tag-wrap"></div>
         <select id="folder-sel"><option value="all">미지정</option></select>
-        <button id="del-btn">🗑</button>
+        <button id="del-btn" title="노트 삭제 (Delete)">🗑</button>
       </div>
     </div>
   </div>
@@ -1107,7 +1107,11 @@ document.getElementById('md-ed').addEventListener('blur',()=>{
 
 document.getElementById('md-ed').addEventListener('paste',async e=>{
   const items=e.clipboardData&&e.clipboardData.items;
-  const imgItem=items&&[...items].find(it=>it.type&&it.type.startsWith('image/'));
+  const html=e.clipboardData.getData('text/html'),text=e.clipboardData.getData('text/plain');
+  // 순수 이미지 붙여넣기(스크린샷, 이미지 복사 등)일 때만 업로드 처리.
+  // 텍스트/HTML이 함께 있는 경우(엑셀, 워드 등에서 복사 시 이미지가 같이 포함되기도 함)는
+  // 일반 텍스트 붙여넣기로 처리해 Ctrl+V가 항상 이미지 업로드로 튀는 것을 방지한다.
+  const imgItem=(!text&&!html)&&items&&[...items].find(it=>it.type&&it.type.startsWith('image/'));
   if(imgItem){
     e.preventDefault();
     const blob=imgItem.getAsFile();
@@ -1123,7 +1127,6 @@ document.getElementById('md-ed').addEventListener('paste',async e=>{
     }
     return;
   }
-  const html=e.clipboardData.getData('text/html'),text=e.clipboardData.getData('text/plain');
   if(html&&(html.includes('<table')||html.includes('<strong')||html.includes('<b>')||html.includes('<a ')||html.includes('<ul')||html.includes('<ol')||html.includes('<h1')||html.includes('<h2')||html.includes('<h3')||html.includes('<blockquote')||html.includes('<pre')||html.includes('<img'))){
     e.preventDefault();const md=htmlToMd(html);if(md.trim())ins('\n'+md+'\n');else if(text)ins(text);toast('서식 포함 붙여넣기');
   }
