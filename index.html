@@ -209,6 +209,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .img-size-preset-btn:hover{background:var(--accent-bg);color:var(--accent);border-color:var(--accent);}
 .img-size-preset-btn.on{background:var(--accent);color:#fff;border-color:var(--accent);}
 .btn-danger{background:var(--danger);color:#fff;}
+.modal-box kbd{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:2px 7px;font-size:11px;font-family:inherit;color:var(--text2);white-space:nowrap;}
+.shortcut-group-title{font-size:11px;color:var(--accent);font-weight:600;margin-top:4px;}
 .file-item{display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);margin-bottom:6px;}
 .file-item-icon{font-size:20px;flex-shrink:0;}
 .file-item-info{flex:1;min-width:0;}
@@ -310,6 +312,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
       <button class="icon-btn" id="new-folder-btn" title="새 폴더">📁+</button>
       <button class="icon-btn" id="share-note-btn" title="노트 링크 공유">🔗</button>
       <button class="icon-btn" id="file-mgr-btn" title="파일 관리">📎</button>
+      <button class="icon-btn" id="shortcuts-btn" title="단축키 가이드">⌨</button>
       <button class="icon-btn" id="settings-btn" title="설정">⚙</button>
       <button class="icon-btn" id="trash-btn" title="휴지통">🗑</button>
       <img id="gh-avatar" src="" alt=""/>
@@ -379,7 +382,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
         <input type="file" id="attach-file" style="display:none" multiple/>
       </div>
       <div id="ed-area">
-        <textarea id="md-ed" placeholder="마크다운으로 작성하세요...&#10;&#10;(Ctrl+S 저장 · Alt+드래그로 열 선택)"></textarea>
+        <textarea id="md-ed" placeholder="마크다운으로 작성하세요...&#10;&#10;(Ctrl+S 저장 · 단축키 가이드는 ⌨ 버튼 참고)"></textarea>
         <div id="preview" style="display:none"></div>
         <div id="scroll-btns">
           <button class="scroll-btn" id="scroll-top-btn" title="맨 위로">↑</button>
@@ -448,6 +451,37 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
     <div class="modal-btns">
       <button class="btn-cancel" id="img-size-reset-btn">원본 크기로</button>
       <button class="btn-cancel" onclick="closeModal('img-size-modal')">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 단축키 가이드 모달 -->
+<div id="shortcuts-modal" class="modal">
+  <div class="modal-box">
+    <h2>⌨ 단축키 가이드</h2>
+    <div class="shortcut-group-title">서식</div>
+    <div class="modal-row"><span>굵게</span><kbd>Ctrl+B</kbd></div>
+    <div class="modal-row"><span>기울임</span><kbd>Ctrl+I</kbd></div>
+    <div class="modal-row"><span>인라인 코드</span><kbd>Ctrl+`</kbd></div>
+    <div class="modal-row"><span>코드 블록</span><kbd>Ctrl+Alt+C</kbd></div>
+    <div class="modal-row"><span>제목1 / 2 / 3</span><kbd>Ctrl+Shift+1 / 2 / 3</kbd></div>
+    <div class="modal-row"><span>목록</span><kbd>Ctrl+Shift+L</kbd></div>
+    <div class="modal-row"><span>체크박스</span><kbd>Ctrl+Shift+K</kbd></div>
+    <div class="modal-row"><span>인용</span><kbd>Ctrl+Shift+Q</kbd></div>
+    <div class="modal-row"><span>수평선</span><kbd>Ctrl+Shift+H</kbd></div>
+    <div class="modal-row"><span>표</span><kbd>Ctrl+Shift+T</kbd></div>
+    <div class="modal-row"><span>링크</span><kbd>Ctrl+Shift+U</kbd></div>
+    <div class="modal-row"><span>파일 첨부</span><kbd>Ctrl+Shift+P</kbd></div>
+    <div class="shortcut-group-title">화면 / 노트</div>
+    <div class="modal-row"><span>저장</span><kbd>Ctrl+S</kbd></div>
+    <div class="modal-row"><span>편집 모드</span><kbd>Ctrl+E</kbd></div>
+    <div class="modal-row"><span>미리보기 모드</span><kbd>Ctrl+Alt+V</kbd></div>
+    <div class="modal-row"><span>노트 삭제(휴지통 이동)</span><kbd>Delete</kbd></div>
+    <div class="shortcut-group-title">붙여넣기</div>
+    <div class="modal-row"><span>텍스트/이미지 붙여넣기</span><kbd>Ctrl+V</kbd></div>
+    <div class="modal-row"><span>서식 붙여넣기(표·목록 등)</span><kbd>Ctrl+V</kbd></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('shortcuts-modal')">닫기</button>
     </div>
   </div>
 </div>
@@ -959,6 +993,7 @@ async function listRepoFiles(){if(!repoOwner||!repoName)return[];try{const r=awa
 async function deleteRepoFile(path,sha){await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`,{method:'DELETE',headers:{Authorization:`token ${token}`,'Content-Type':'application/json'},body:JSON.stringify({message:`Delete ${path}`,sha})});}
 
 document.getElementById('file-mgr-btn').onclick=async()=>{openModal('file-modal');await refreshFileList();};
+document.getElementById('shortcuts-btn').onclick=()=>openModal('shortcuts-modal');
 async function refreshFileList(){
   const el=document.getElementById('file-list');el.innerHTML='<div style="padding:10px;text-align:center;color:var(--text2);font-size:12px;">불러오는 중...</div>';
   if(!repoOwner||!repoName){el.innerHTML='<div style="padding:10px;text-align:center;color:var(--text2);font-size:12px;">⚙ 설정에서 저장소를 먼저 설정하세요.</div>';return;}
@@ -1070,176 +1105,30 @@ document.getElementById('md-ed').addEventListener('blur',()=>{
   if(wikiAcEl)setTimeout(()=>wikiAcEl.style.display='none',150);
 });
 
-document.getElementById('md-ed').addEventListener('paste',e=>{
+document.getElementById('md-ed').addEventListener('paste',async e=>{
+  const items=e.clipboardData&&e.clipboardData.items;
+  const imgItem=items&&[...items].find(it=>it.type&&it.type.startsWith('image/'));
+  if(imgItem){
+    e.preventDefault();
+    const blob=imgItem.getAsFile();
+    if(!blob)return;
+    const ext=(blob.type.split('/')[1]||'png').replace('jpeg','jpg');
+    const name=`pasted_${Date.now()}.${ext}`;
+    const file=new File([blob],name,{type:blob.type});
+    const r=await uploadFileToRepo(file);
+    if(r){
+      const ghsrc=`gh-file://${r.owner}/${r.repo}/${r.path}`;
+      ins(`\n![${name}](${ghsrc})\n`);
+      toast('이미지 붙여넣기 완료!');
+    }
+    return;
+  }
   const html=e.clipboardData.getData('text/html'),text=e.clipboardData.getData('text/plain');
   if(html&&(html.includes('<table')||html.includes('<strong')||html.includes('<b>')||html.includes('<a ')||html.includes('<ul')||html.includes('<ol')||html.includes('<h1')||html.includes('<h2')||html.includes('<h3')||html.includes('<blockquote')||html.includes('<pre')||html.includes('<img'))){
     e.preventDefault();const md=htmlToMd(html);if(md.trim())ins('\n'+md+'\n');else if(text)ins(text);toast('서식 포함 붙여넣기');
   }
 });
 
-// ── Alt+드래그 열(컬럼) 선택 모드 ──────────────────────
-// Notepad++ 스타일의 블록 선택. textarea는 사각형 선택을 지원하지 않으므로
-// 고정폭 폰트(Courier New)를 전제로 픽셀 좌표를 줄/컬럼 인덱스로 환산하고,
-// 오버레이로 시각화한 뒤 해당 컬럼 범위에 동시 입력/삭제를 적용한다.
-let colSelectMode=false;
-let colSelectStart=null,colSelectEnd=null;
-let colSelectOverlay=null;
-let colCharWidth=0,colLineHeight=0;
-
-function measureFontMetrics(){
-  const ta=document.getElementById('md-ed');
-  const style=getComputedStyle(ta);
-  const span=document.createElement('span');
-  span.style.font=style.font;
-  span.style.position='absolute';
-  span.style.whiteSpace='pre';
-  span.style.visibility='hidden';
-  span.textContent='MMMMMMMMMM';
-  document.body.appendChild(span);
-  colCharWidth=span.getBoundingClientRect().width/10;
-  document.body.removeChild(span);
-  colLineHeight=parseFloat(style.lineHeight);
-  if(isNaN(colLineHeight))colLineHeight=parseFloat(style.fontSize)*1.4;
-}
-
-function getLineColFromEvent(e){
-  const ta=document.getElementById('md-ed');
-  const rect=ta.getBoundingClientRect();
-  const style=getComputedStyle(ta);
-  const padL=parseFloat(style.paddingLeft),padT=parseFloat(style.paddingTop);
-  const x=e.clientX-rect.left-padL+ta.scrollLeft;
-  const y=e.clientY-rect.top-padT+ta.scrollTop;
-  const line=Math.max(0,Math.floor(y/colLineHeight));
-  const col=Math.max(0,Math.round(x/colCharWidth));
-  return{line,col};
-}
-
-function ensureColOverlay(){
-  if(!colSelectOverlay){
-    colSelectOverlay=document.createElement('div');
-    colSelectOverlay.id='col-select-overlay';
-    colSelectOverlay.style.cssText='position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:5;overflow:hidden;';
-    document.getElementById('md-ed').parentElement.appendChild(colSelectOverlay);
-  }
-}
-
-function updateColOverlay(){
-  if(!colSelectStart||!colSelectEnd)return;
-  ensureColOverlay();
-  const ta=document.getElementById('md-ed');
-  const style=getComputedStyle(ta);
-  const padL=parseFloat(style.paddingLeft),padT=parseFloat(style.paddingTop);
-  const minLine=Math.min(colSelectStart.line,colSelectEnd.line);
-  const maxLine=Math.max(colSelectStart.line,colSelectEnd.line);
-  const minCol=Math.min(colSelectStart.col,colSelectEnd.col);
-  const maxCol=Math.max(colSelectStart.col,colSelectEnd.col);
-  colSelectOverlay.innerHTML='';
-  for(let l=minLine;l<=maxLine;l++){
-    const box=document.createElement('div');
-    const top=padT+l*colLineHeight-ta.scrollTop;
-    const left=padL+minCol*colCharWidth-ta.scrollLeft;
-    const width=Math.max((maxCol-minCol)*colCharWidth,2);
-    box.style.cssText=`position:absolute;top:${top}px;left:${left}px;width:${width}px;height:${colLineHeight}px;background:var(--accent);opacity:.3;`;
-    colSelectOverlay.appendChild(box);
-  }
-}
-
-function clearColSelection(){
-  colSelectMode=false;colSelectStart=null;colSelectEnd=null;
-  if(colSelectOverlay){colSelectOverlay.remove();colSelectOverlay=null;}
-}
-
-document.getElementById('md-ed').addEventListener('mousedown',e=>{
-  if(e.altKey){
-    e.preventDefault();
-    measureFontMetrics();
-    colSelectMode=true;
-    colSelectStart=getLineColFromEvent(e);
-    colSelectEnd=colSelectStart;
-    updateColOverlay();
-    const onMove=me=>{colSelectEnd=getLineColFromEvent(me);updateColOverlay();};
-    const onUp=()=>{
-      document.removeEventListener('mousemove',onMove);
-      document.removeEventListener('mouseup',onUp);
-      document.getElementById('md-ed').focus();
-    };
-    document.addEventListener('mousemove',onMove);
-    document.addEventListener('mouseup',onUp);
-  }else if(colSelectMode){
-    clearColSelection();
-  }
-});
-
-document.getElementById('md-ed').addEventListener('scroll',()=>{
-  if(colSelectMode)updateColOverlay();
-});
-
-document.getElementById('md-ed').addEventListener('keydown',e=>{
-  if(!colSelectMode)return;
-  if(e.key==='Escape'){clearColSelection();return;}
-
-  const ta=document.getElementById('md-ed');
-  const lines=ta.value.split('\n');
-  const minLine=Math.min(colSelectStart.line,colSelectEnd.line);
-  const maxLine=Math.max(colSelectStart.line,colSelectEnd.line);
-  const minCol=Math.min(colSelectStart.col,colSelectEnd.col);
-  const maxCol=Math.max(colSelectStart.col,colSelectEnd.col);
-
-  // Backspace: 컬럼 왼쪽 문자 삭제(너비가 있으면 그 범위를 삭제)
-  if(e.key==='Backspace'){
-    e.preventDefault();
-    if(minCol===maxCol){
-      for(let l=minLine;l<=maxLine&&l<lines.length;l++){
-        const line=lines[l];const c=Math.min(minCol,line.length);
-        if(c>0)lines[l]=line.slice(0,c-1)+line.slice(c);
-      }
-      const nc=Math.max(0,minCol-1);colSelectStart.col=nc;colSelectEnd.col=nc;
-    }else{
-      for(let l=minLine;l<=maxLine&&l<lines.length;l++){
-        const line=lines[l];
-        lines[l]=line.slice(0,Math.min(minCol,line.length))+line.slice(Math.min(maxCol,line.length));
-      }
-      colSelectStart.col=minCol;colSelectEnd.col=minCol;
-    }
-    ta.value=lines.join('\n');updCur();updateColOverlay();
-    return;
-  }
-
-  // Delete: 컬럼 오른쪽 문자 삭제(너비가 있으면 그 범위를 삭제)
-  if(e.key==='Delete'){
-    e.preventDefault();
-    for(let l=minLine;l<=maxLine&&l<lines.length;l++){
-      const line=lines[l];
-      const start=Math.min(minCol,line.length);
-      const end=Math.min(maxCol>minCol?maxCol:minCol+1,line.length);
-      lines[l]=line.slice(0,start)+line.slice(end);
-    }
-    ta.value=lines.join('\n');updCur();updateColOverlay();
-    return;
-  }
-
-  // 일반 문자 입력: 모든 선택 줄의 같은 컬럼 위치에 동시 삽입
-  if(e.key.length===1 && !e.ctrlKey && !e.metaKey && !e.altKey){
-    e.preventDefault();
-    for(let l=minLine;l<=maxLine;l++){
-      if(l>=lines.length)lines[l]='';
-      let line=lines[l];
-      const c=Math.min(minCol,line.length);
-      if(line.length<c)line=line+' '.repeat(c-line.length);
-      const cutEnd=maxCol>minCol?Math.min(maxCol,line.length):c;
-      lines[l]=line.slice(0,c)+e.key+line.slice(cutEnd);
-    }
-    ta.value=lines.join('\n');
-    const nc=minCol+1;colSelectStart.col=nc;colSelectEnd.col=nc;
-    updCur();updateColOverlay();
-    return;
-  }
-
-  // 그 외 키(Enter, 화살표 등)는 컬럼 모드를 종료하고 기본 동작 허용
-  if(e.key==='Enter'||e.key.startsWith('Arrow')){
-    clearColSelection();
-  }
-});
 
 // ── 폴더 ─────────────────────────────────────────
 function saveF(){localStorage.setItem(FK,JSON.stringify(folders));}
@@ -2083,6 +1972,7 @@ document.getElementById('md-ed').addEventListener('keydown',e=>{
     if(e.key==='h'||e.key==='H'){e.preventDefault();applyStyle('hr');return;}
     if(e.key==='t'||e.key==='T'){e.preventDefault();applyStyle('table');return;}
     if(e.key==='u'||e.key==='U'){e.preventDefault();applyStyle('link');return;}
+    if(e.key==='p'||e.key==='P'){e.preventDefault();document.getElementById('attach-file').click();return;}
   }
   
   // Ctrl+Alt 조합
@@ -2118,13 +2008,13 @@ document.getElementById('t-prev').onclick=()=>{
 
 // ── 단축키: 탭 전환 및 삭제 ────────────────────────
 document.addEventListener('keydown',e=>{
-  // E: 편집 모드
-  if((e.ctrlKey||e.metaKey)&&e.key==='e'){
+  // Ctrl+E: 편집 모드
+  if((e.ctrlKey||e.metaKey)&&!e.altKey&&(e.key==='e'||e.key==='E')){
     e.preventDefault();
     switchToEdit();
   }
-  // V: 미리보기 모드  
-  if((e.ctrlKey||e.metaKey)&&e.key==='v'){
+  // Ctrl+Alt+V: 미리보기 모드 (Ctrl+V는 붙여넣기 전용으로 비워둠)
+  if((e.ctrlKey||e.metaKey)&&e.altKey&&(e.key==='v'||e.key==='V')){
     e.preventDefault();
     document.getElementById('t-prev').click();
   }
