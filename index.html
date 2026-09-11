@@ -1878,7 +1878,12 @@ function parseMd(raw){
     return k;
   });
   md=md.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  md=md.replace(/^#{3} (.+)$/gm,'<h3>$1</h3>').replace(/^#{2} (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>').replace(/^---$/gm,'<hr>').replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/`([^`\n]+)`/g,'<code>$1</code>');
+  // 인용문(>): 연속된 줄을 하나의 blockquote로 합쳐서 줄 사이 여백 없이 표시
+  md=md.replace(/^(&gt; ?.*(?:\n&gt; ?.*)*)$/gm,block=>{
+    const inner=block.split('\n').map(l=>l.replace(/^&gt; ?/,'')).join('<br>');
+    return `<blockquote>${inner}</blockquote>`;
+  });
+  md=md.replace(/^#{3} (.+)$/gm,'<h3>$1</h3>').replace(/^#{2} (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>').replace(/^---$/gm,'<hr>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/`([^`\n]+)`/g,'<code>$1</code>');
   md=md.replace(/\[([^\]]+)\]\(((?:https?|gh-file):\/\/[^)]+)\)/g,(m,text,href)=>{
     const gh=parseGhSrc(href);
     return gh?`<a href="#" data-gh-owner="${gh.owner}" data-gh-repo="${gh.repo}" data-gh-path="${encodeURIComponent(gh.path)}" onclick="openGhFile(this);return false;">${text}</a>`
