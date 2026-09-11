@@ -379,7 +379,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
         <input type="file" id="attach-file" style="display:none" multiple/>
       </div>
       <div id="ed-area">
-        <textarea id="md-ed" placeholder="마크다운으로 작성하세요...&#10;&#10;(Ctrl+S 저장)"></textarea>
+        <textarea id="md-ed" placeholder="마크다운으로 작성하세요...&#10;&#10;(Ctrl+S 저장 · Alt+드래그로 열 선택)"></textarea>
         <div id="preview" style="display:none"></div>
         <div id="scroll-btns">
           <button class="scroll-btn" id="scroll-top-btn" title="맨 위로">↑</button>
@@ -688,6 +688,7 @@ function applySettings(){
 
 // ── 초기화 ────────────────────────────────────────
 window.onload=()=>{
+  document.getElementById('md-ed').parentElement.style.position='relative';
   notes=JSON.parse(localStorage.getItem(LK)||'[]');
   folders=JSON.parse(localStorage.getItem(FK)||'[]');
   trash=JSON.parse(localStorage.getItem(TRASHK)||'[]');
@@ -1073,6 +1074,170 @@ document.getElementById('md-ed').addEventListener('paste',e=>{
   const html=e.clipboardData.getData('text/html'),text=e.clipboardData.getData('text/plain');
   if(html&&(html.includes('<table')||html.includes('<strong')||html.includes('<b>')||html.includes('<a ')||html.includes('<ul')||html.includes('<ol')||html.includes('<h1')||html.includes('<h2')||html.includes('<h3')||html.includes('<blockquote')||html.includes('<pre')||html.includes('<img'))){
     e.preventDefault();const md=htmlToMd(html);if(md.trim())ins('\n'+md+'\n');else if(text)ins(text);toast('서식 포함 붙여넣기');
+  }
+});
+
+// ── Alt+드래그 열(컬럼) 선택 모드 ──────────────────────
+// Notepad++ 스타일의 블록 선택. textarea는 사각형 선택을 지원하지 않으므로
+// 고정폭 폰트(Courier New)를 전제로 픽셀 좌표를 줄/컬럼 인덱스로 환산하고,
+// 오버레이로 시각화한 뒤 해당 컬럼 범위에 동시 입력/삭제를 적용한다.
+let colSelectMode=false;
+let colSelectStart=null,colSelectEnd=null;
+let colSelectOverlay=null;
+let colCharWidth=0,colLineHeight=0;
+
+function measureFontMetrics(){
+  const ta=document.getElementById('md-ed');
+  const style=getComputedStyle(ta);
+  const span=document.createElement('span');
+  span.style.font=style.font;
+  span.style.position='absolute';
+  span.style.whiteSpace='pre';
+  span.style.visibility='hidden';
+  span.textContent='MMMMMMMMMM';
+  document.body.appendChild(span);
+  colCharWidth=span.getBoundingClientRect().width/10;
+  document.body.removeChild(span);
+  colLineHeight=parseFloat(style.lineHeight);
+  if(isNaN(colLineHeight))colLineHeight=parseFloat(style.fontSize)*1.4;
+}
+
+function getLineColFromEvent(e){
+  const ta=document.getElementById('md-ed');
+  const rect=ta.getBoundingClientRect();
+  const style=getComputedStyle(ta);
+  const padL=parseFloat(style.paddingLeft),padT=parseFloat(style.paddingTop);
+  const x=e.clientX-rect.left-padL+ta.scrollLeft;
+  const y=e.clientY-rect.top-padT+ta.scrollTop;
+  const line=Math.max(0,Math.floor(y/colLineHeight));
+  const col=Math.max(0,Math.round(x/colCharWidth));
+  return{line,col};
+}
+
+function ensureColOverlay(){
+  if(!colSelectOverlay){
+    colSelectOverlay=document.createElement('div');
+    colSelectOverlay.id='col-select-overlay';
+    colSelectOverlay.style.cssText='position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:5;overflow:hidden;';
+    document.getElementById('md-ed').parentElement.appendChild(colSelectOverlay);
+  }
+}
+
+function updateColOverlay(){
+  if(!colSelectStart||!colSelectEnd)return;
+  ensureColOverlay();
+  const ta=document.getElementById('md-ed');
+  const style=getComputedStyle(ta);
+  const padL=parseFloat(style.paddingLeft),padT=parseFloat(style.paddingTop);
+  const minLine=Math.min(colSelectStart.line,colSelectEnd.line);
+  const maxLine=Math.max(colSelectStart.line,colSelectEnd.line);
+  const minCol=Math.min(colSelectStart.col,colSelectEnd.col);
+  const maxCol=Math.max(colSelectStart.col,colSelectEnd.col);
+  colSelectOverlay.innerHTML='';
+  for(let l=minLine;l<=maxLine;l++){
+    const box=document.createElement('div');
+    const top=padT+l*colLineHeight-ta.scrollTop;
+    const left=padL+minCol*colCharWidth-ta.scrollLeft;
+    const width=Math.max((maxCol-minCol)*colCharWidth,2);
+    box.style.cssText=`position:absolute;top:${top}px;left:${left}px;width:${width}px;height:${colLineHeight}px;background:var(--accent);opacity:.3;`;
+    colSelectOverlay.appendChild(box);
+  }
+}
+
+function clearColSelection(){
+  colSelectMode=false;colSelectStart=null;colSelectEnd=null;
+  if(colSelectOverlay){colSelectOverlay.remove();colSelectOverlay=null;}
+}
+
+document.getElementById('md-ed').addEventListener('mousedown',e=>{
+  if(e.altKey){
+    e.preventDefault();
+    measureFontMetrics();
+    colSelectMode=true;
+    colSelectStart=getLineColFromEvent(e);
+    colSelectEnd=colSelectStart;
+    updateColOverlay();
+    const onMove=me=>{colSelectEnd=getLineColFromEvent(me);updateColOverlay();};
+    const onUp=()=>{
+      document.removeEventListener('mousemove',onMove);
+      document.removeEventListener('mouseup',onUp);
+      document.getElementById('md-ed').focus();
+    };
+    document.addEventListener('mousemove',onMove);
+    document.addEventListener('mouseup',onUp);
+  }else if(colSelectMode){
+    clearColSelection();
+  }
+});
+
+document.getElementById('md-ed').addEventListener('scroll',()=>{
+  if(colSelectMode)updateColOverlay();
+});
+
+document.getElementById('md-ed').addEventListener('keydown',e=>{
+  if(!colSelectMode)return;
+  if(e.key==='Escape'){clearColSelection();return;}
+
+  const ta=document.getElementById('md-ed');
+  const lines=ta.value.split('\n');
+  const minLine=Math.min(colSelectStart.line,colSelectEnd.line);
+  const maxLine=Math.max(colSelectStart.line,colSelectEnd.line);
+  const minCol=Math.min(colSelectStart.col,colSelectEnd.col);
+  const maxCol=Math.max(colSelectStart.col,colSelectEnd.col);
+
+  // Backspace: 컬럼 왼쪽 문자 삭제(너비가 있으면 그 범위를 삭제)
+  if(e.key==='Backspace'){
+    e.preventDefault();
+    if(minCol===maxCol){
+      for(let l=minLine;l<=maxLine&&l<lines.length;l++){
+        const line=lines[l];const c=Math.min(minCol,line.length);
+        if(c>0)lines[l]=line.slice(0,c-1)+line.slice(c);
+      }
+      const nc=Math.max(0,minCol-1);colSelectStart.col=nc;colSelectEnd.col=nc;
+    }else{
+      for(let l=minLine;l<=maxLine&&l<lines.length;l++){
+        const line=lines[l];
+        lines[l]=line.slice(0,Math.min(minCol,line.length))+line.slice(Math.min(maxCol,line.length));
+      }
+      colSelectStart.col=minCol;colSelectEnd.col=minCol;
+    }
+    ta.value=lines.join('\n');updCur();updateColOverlay();
+    return;
+  }
+
+  // Delete: 컬럼 오른쪽 문자 삭제(너비가 있으면 그 범위를 삭제)
+  if(e.key==='Delete'){
+    e.preventDefault();
+    for(let l=minLine;l<=maxLine&&l<lines.length;l++){
+      const line=lines[l];
+      const start=Math.min(minCol,line.length);
+      const end=Math.min(maxCol>minCol?maxCol:minCol+1,line.length);
+      lines[l]=line.slice(0,start)+line.slice(end);
+    }
+    ta.value=lines.join('\n');updCur();updateColOverlay();
+    return;
+  }
+
+  // 일반 문자 입력: 모든 선택 줄의 같은 컬럼 위치에 동시 삽입
+  if(e.key.length===1 && !e.ctrlKey && !e.metaKey && !e.altKey){
+    e.preventDefault();
+    for(let l=minLine;l<=maxLine;l++){
+      if(l>=lines.length)lines[l]='';
+      let line=lines[l];
+      const c=Math.min(minCol,line.length);
+      if(line.length<c)line=line+' '.repeat(c-line.length);
+      const cutEnd=maxCol>minCol?Math.min(maxCol,line.length):c;
+      lines[l]=line.slice(0,c)+e.key+line.slice(cutEnd);
+    }
+    ta.value=lines.join('\n');
+    const nc=minCol+1;colSelectStart.col=nc;colSelectEnd.col=nc;
+    updCur();updateColOverlay();
+    return;
+  }
+
+  // 그 외 키(Enter, 화살표 등)는 컬럼 모드를 종료하고 기본 동작 허용
+  if(e.key==='Enter'||e.key.startsWith('Arrow')){
+    clearColSelection();
   }
 });
 
