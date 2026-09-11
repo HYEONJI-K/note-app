@@ -301,7 +301,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
   <div id="topbar">
     <button id="menu-btn" title="사이드바 토글">☰</button>
     <button id="save-btn" title="저장 (Ctrl+S)">💾 저장</button>
-    <span id="save-status" title="저장 상태" style="font-size:12px;color:var(--text2);display:none;margin-left:6px;">✓</span>
     <span id="sync-status" style="flex:1;"></span>
     <div id="topbar-right">
       <div class="tbtn on" data-t="light" id="tb-beige" title="베이지"></div>
@@ -1386,14 +1385,6 @@ function defNotes(){return [{id:'demo1',title:'환영합니다! 📝',body:'# No
 
 function saveL(){
   localStorage.setItem(LK,JSON.stringify(notes));
-  // 저장 상태 표시
-  const statusEl=document.getElementById('save-status');
-  if(statusEl){
-    statusEl.style.display='inline';
-    statusEl.textContent='✓';
-    statusEl.style.color='#4ade80';
-    statusEl.title='저장됨';
-  }
 }
 
 // 현재 폴더에 속한 태그만 반환
@@ -1588,7 +1579,7 @@ function renderFTags(tags){
 function normalizeTag(t){return t.trim().toLowerCase();}
 function addTag(t){t=normalizeTag(t);if(!t)return;const n=notes.find(x=>x.id===cur);if(!n)return;const existing=(n.tags||[]).map(x=>x.toLowerCase());if(!existing.includes(t)){n.tags=[...(n.tags||[]),t];saveL();}renderFTags(n.tags);renderTags();renderList();}
 function rmTag(t){const n=notes.find(x=>x.id===cur);if(!n)return;n.tags=(n.tags||[]).filter(x=>x!==t);saveL();renderFTags(n.tags);renderTags();renderList();}
-function updCur(){const n=notes.find(x=>x.id===cur);if(!n)return;n.body=document.getElementById('md-ed').value;n.title=document.getElementById('title-in').value;n.folder=document.getElementById('folder-sel').value;saveL();renderList();if(!editMode)renderPrev();}
+function updCur(){const n=notes.find(x=>x.id===cur);if(!n)return;n.body=document.getElementById('md-ed').value;n.title=document.getElementById('title-in').value;n.folder=document.getElementById('folder-sel').value;n.updated=Date.now();saveL();renderList();if(!editMode)renderPrev();}
 document.getElementById('md-ed').oninput=updCur;
 document.getElementById('title-in').oninput=updCur;
 document.getElementById('title-in').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();document.getElementById('md-ed').focus();}};
@@ -1871,7 +1862,13 @@ function applyStyle(action){
   if(action==='h1'){applyLinePrefix('# ');return;}
   if(action==='h2'){applyLinePrefix('## ');return;}
   if(action==='h3'){applyLinePrefix('### ');return;}
-  if(action==='codeblock'){ins('```\n\n```');return;}
+  if(action==='codeblock'){
+    const ta=document.getElementById('md-ed');
+    const s=ta.selectionStart,e=ta.selectionEnd,sel=ta.value.slice(s,e);
+    const content=sel?('\n'+sel+'\n'):'';
+    ins('```'+content+'```',false);
+    return;
+  }
   if(action==='hr'){ins('\n---\n');return;}
   if(action==='attach'){document.getElementById('attach-file').click();return;}
   if(action==='link'){
@@ -1941,6 +1938,45 @@ document.getElementById('t-prev').onclick=()=>{
   document.getElementById('toolbar').style.display='none';
   document.getElementById('t-prev').classList.add('on');document.getElementById('t-edit').classList.remove('on');
 };
+
+// ── 단축키: 탭 전환 및 삭제 ────────────────────────
+document.addEventListener('keydown',e=>{
+  // E: 편집 모드
+  if((e.ctrlKey||e.metaKey)&&e.key==='e'){
+    e.preventDefault();
+    switchToEdit();
+  }
+  // V: 미리보기 모드  
+  if((e.ctrlKey||e.metaKey)&&e.key==='v'){
+    e.preventDefault();
+    document.getElementById('t-prev').click();
+  }
+  // Delete 또는 Ctrl+Backspace: 노트 삭제
+  if((e.key==='Delete'||(e.ctrlKey&&e.key==='Backspace'))&&document.activeElement.id!=='md-ed'&&document.activeElement.id!=='title-in'){
+    if(cur&&confirm('이 노트를 휴지통으로 이동할까요?')){
+      const n=notes.find(x=>x.id===cur);
+      if(n)trash.push(n);
+      notes=notes.filter(x=>x.id!==cur);
+      saveL();
+      const remaining=notes.filter(x=>{
+        if(afolder==='fav')return x.favorite;
+        if(afolder!=='all'&&x.folder!==afolder)return false;
+        if(atag&&!(x.tags||[]).includes(atag))return false;
+        return true;
+      });
+      if(remaining.length>0){
+        selNote(remaining[0].id);
+      }else{
+        cur=null;
+        document.getElementById('title-in').value='';
+        document.getElementById('md-ed').value='';
+        renderFTags([]);
+        renderList();
+      }
+      toast('휴지통으로 이동했습니다.');
+    }
+  }
+});
 
 // ── 새 노트 / 삭제 ───────────────────────────────
 document.getElementById('new-btn').onclick=()=>{
